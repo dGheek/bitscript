@@ -1,0 +1,906 @@
+/*================ Normal desktop :992px.==================== */
+
+@media (min-width: 992px) and (max-width: 1169px) {
+	.finves-header-top-area:after {
+		right: calc(50% + 250px)
+	}
+	.mainmenu ul li a {
+		font-size: 16px;
+		padding: 30px 7px
+	}
+	.site-logo img {
+		margin: 28px 0
+	}
+	.slider-text h2 {
+		font-size: 37px;
+		line-height: 47px
+	}
+	.slider-text h3 {
+		font-size: 25px
+	}
+	.slider-text p {
+		width: 75%;
+		font-size: 15px
+	}
+	.about-right {
+		padding-left: 0
+	}
+	.about-right>h3 {
+		display: none
+	}
+	.single-service-box {
+		padding: 40px 20px
+	}
+	.service-text h3 {
+		font-size: 20px
+	}
+	.agent-text h3 {
+		font-size: 22px
+	}
+	.blog-text h3 {
+		font-size: 18px
+	}
+	.site-heading h4 {
+		font-size: 18px
+	}
+	.site-heading h2 {
+		font-size: 35px
+	}
+	.investment-left h2,
+	.investment-right h2 {
+		font-size: 32px
+	}
+	.single-process {
+		padding: 30px 20px
+	}
+	.process-text h3 {
+		font-size: 24px
+	}
+	.finves-process-area .site-heading h2 {
+		font-size: 32px
+	}
+	.about-right h2 {
+		font-size: 32px
+	}
+	.usefull_links {
+		width: 100%;
+		float: none
+	}
+	.footer-about li i {
+		display: none
+	}
+	.footer-follow ul li a {
+		width: 35px;
+		height: 35px;
+		line-height: 38px
+	}
+	.counter-text p {
+		font-size: 13px;
+	}
+	.counter-text h3 {
+		font-size: 32px
+	}
+	.counter-icon {
+		font-size: 28px;
+		width: 35px;
+		margin-right: 5px
+	}
+	.single-counter-box {
+		padding: 15px
+	}
+	.promo-box h2 {
+		font-size: 45px;
+		line-height: 60px
+	}
+	.social_widget ul li {
+		margin-right: 0
+	}
+	.social_widget ul li a {
+		width: 35px;
+		height: 35px;
+		line-height: 39px
+	}
+	.social_widget span {
+		margin-right: 0
+	}
+}
+
+
+/*================ Tablet desktop :768px.==================*/
+
+@media (min-width: 768px) and (max-width: 991px) {
+	.finves-header-top-area:after {
+		width: 100%;
+		right: calc(50% + 150px)
+	}
+	.site-logo img {
+		width: 25%
+	}
+	.finves-responsive-menu {
+		display: block;
+		width: 50%
+	}
+	.mainmenu {
+		display: none
+	}
+	.header-action {
+		display: none
+	}
+	.slicknav_btn {
+		margin-top: 10px
+	}
+	.slider-text h2 {
+		font-size: 35px;
+		line-height: 45px
+	}
+	.slider-text p {
+		display: none
+	}
+	.slider-text h3 {
+		font-size: 20px
+	}
+	.finves-main-slide {
+		height: 430px
+	}
+	.about-page-left {
+		margin: 0 50px
+	}
+	.about-right>h3 {
+		display: none
+	}
+	.about-right {
+		padding: 0;
+		margin: 50px 50px 0 50px
+	}
+	.about-right h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.single-service-box {
+		padding: 30px 20px
+	}
+	.service-text h3 {
+		font-size: 22px
+	}
+	.service-slider .owl-next {
+		right: 0
+	}
+	.service-slider .owl-prev {
+		left: 0
+	}
+	.site-heading {
+		width: 80%
+	}
+	.finves-process-area .site-heading h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.single-process {
+		margin: 0 50px 30px
+	}
+	.investment-left {
+		margin: 0 50px
+	}
+	.investment-right {
+		margin: 30px 50px 0
+	}
+	.investment-left form p button {
+		margin-top: 20px
+	}
+	.site-heading h2 {
+		font-size: 35px
+	}
+	.site-heading h4 {
+		font-size: 17px
+	}
+	.single-blog-item {
+		margin: 0 50px 30px
+	}
+	.single-footer {
+		margin: 15px 0
+	}
+	.finves-breadcromb-area {
+		padding: 50px 0
+	}
+	.breadcromb-box h3 {
+		font-size: 36px
+	}
+	.single-counter-box {
+		margin: 0 50px 30px
+	}
+	.mission-area-left {
+		margin: 0 50px 30px
+	}
+	.mission-area-right {
+		margin: 0 50px 0
+	}
+	.service-page-area .single-service-box {
+		margin: 0 50px 30px
+	}
+	.promo-box h2 {
+		font-size: 40px;
+		line-height: 55px
+	}
+	.finves-service-details .sidebar-left {
+		margin: 0 50px 0
+	}
+	.service-details-right {
+		margin: 30px 50px 0
+	}
+	.finves-project-area .site-heading {
+		width: 80%
+	}
+	.project-item {
+		margin: 0 50px 30px
+	}
+	.project-details-left {
+		margin: 0 50px 0;
+	}
+	.project-details-start .sidebar-left {
+		margin: 30px 50px 0
+	}
+	.details-project-text {
+		margin: 0 50px;
+	}
+	.details-project-text.details-project-right {
+		margin: 30px 50px 0
+	}
+	.not-found-text {
+		width: 100%
+	}
+	.finves-faqs-left {
+		margin: 0 50px 30px;
+	}
+	.finves-faqs-right {
+		margin: 0 50px 0;
+	}
+	.login-left-inn {
+		display: none;
+	}
+	.finves-login-page-area:after {
+		display: none
+	}
+	.login-form {
+		width: auto;
+		float: none;
+		margin: 0 50px
+	}
+	.register-left-inn {
+		display: none
+	}
+	.finves-blog-page-area .sidebar-left {
+		margin: 50px 50px 0
+	}
+	.single-blog-page-left h3 {
+		font-size: 30px;
+		line-height: 45px
+	}
+	.single-blog-page-left {
+		margin: 0 50px;
+	}
+	.finves-blog-single-page .sidebar-left {
+		margin: 30px 50px 0
+	}
+	.contact-info {
+		margin: 0 50px 30px;
+	}
+	.contact-info.inner-contact-info {
+		margin: 0;
+	}
+	.contact-form {
+		margin: 0 50px
+	}
+}
+
+
+/*================== small mobile :320px. ===================*/
+
+@media (max-width: 767px) {
+	.header-top-left {
+		display: none
+	}
+	.header-top-right {
+		text-align: center
+	}
+	.finves-responsive-menu {
+		display: block
+	}
+	.mainmenu {
+		display: none
+	}
+	.header-action {
+		display: none
+	}
+	.site-logo img {
+		width: 45%;
+		margin: 21px 0;
+		position: relative;
+		z-index: 9999;
+	}
+	.finves-main-caption:after {
+		display: none
+	}
+	.slider-text {
+		width: 100%;
+		text-align: center
+	}
+	.slider-text h2 {
+		font-size: 35px;
+		line-height: 40px
+	}
+	.slider-text h3 {
+		font-size: 26px;
+		font-weight: 600;
+		padding-left: 4%
+	}
+	.slider-text p,
+	.slider-text a {
+		display: none
+	}
+	.finves-main-caption {
+		background: rgba(4, 14, 39, 0.48) none repeat scroll 0 0
+	}
+	.finves-main-slide {
+		height: 320px
+	}
+	.finves-slide .owl-next {
+		right: 10px
+	}
+	.finves-slide .owl-prev {
+		left: 10px
+	}
+	.about-right {
+		padding-left: 0;
+		margin-top: 30px
+	}
+	.about-right>h3 {
+		display: none
+	}
+	.about-right h2 {
+		font-size: 28px;
+		line-height: 35px
+	}
+	.about-list li {
+		float: none;
+		width: 100%;
+		margin-right: 0
+	}
+	.call-right {
+		display: none
+	}
+	.site-heading {
+		width: 100%
+	}
+	.site-heading h4 {
+		font-size: 18px
+	}
+	.site-heading h2 {
+		font-size: 30px
+	}
+	.finves-service-area .site-heading h2 {
+		font-size: 30px
+	}
+	.service-slider .owl-next {
+		right: 0
+	}
+	.service-slider .owl-prev {
+		left: 0
+	}
+	.service-text h3 {
+		font-size: 22px
+	}
+	.single-service-box {
+		padding: 20px
+	}
+	.finves-process-area .site-heading h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.process-text h3 {
+		font-size: 22px
+	}
+	.investment-left form p {
+		margin-top: 20px
+	}
+	.investment-left form p button {
+		margin-top: 30px
+	}
+	.investment-right {
+		margin-top: 30px
+	}
+	.investment-left h2,
+	.investment-right h2 {
+		font-size: 30px
+	}
+	.testimonial-box:after {
+		display: none
+	}
+	.testimonial-box {
+		width: 100%
+	}
+	.testimonial-sldier {
+		padding: 20px;
+		border-radius: 20px
+	}
+	.single-testimonial:before {
+		font-size: 35px;
+		left: 10px
+	}
+	.testimonial-image {
+		width: 85px
+	}
+	.testimonial-meta p {
+		font-size: 14px
+	}
+	.testimonial-meta h3 {
+		font-size: 20px
+	}
+	.testimonial-sldier .owl-next {
+		right: 10px
+	}
+	.testimonial-sldier .owl-prev {
+		left: 10px
+	}
+	.single-footer {
+		margin: 20px 0
+	}
+	.finves-breadcromb-area {
+		padding: 50px 0
+	}
+	.breadcromb-box h3 {
+		font-size: 30px;
+		margin-bottom: 5px
+	}
+	.about-list {
+		margin-top: 30px
+	}
+	.counter-text h3 {
+		font-size: 35px
+	}
+	.mission-area-left {
+		margin-left: 25px
+	}
+	.single-mission>h3 {
+		font-size: 22px
+	}
+	.mission-area-right {
+		margin-left: 0;
+		margin-top: 30px
+	}
+	.promo-box h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.service-details-right {
+		margin-top: 30px;
+	}
+	.service-details-right h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.service-right-image .col-lg-6:first-child {
+		padding-right: 15px;
+		margin-bottom: 30px
+	}
+	.service-right-image .col-lg-6:last-child {
+		padding-left: 15px;
+	}
+	.finves-project-area .site-heading {
+		width: 100%
+	}
+	.portfolio-filter li {
+		display: block;
+		margin: 5px 20px
+	}
+	.sidebar-left {
+		margin-top: 30px
+	}
+	.social_widget ul li {
+		margin: 0
+	}
+	.social_widget span {
+		margin-right: 0
+	}
+	.details-project-right {
+		margin-top: 30px
+	}
+	.not-found-text {
+		width: 100%
+	}
+	.not-found-inn span {
+		font-size: 80px
+	}
+	.not-found-inn img {
+		width: 75px
+	}
+	.not-found-text h3 {
+		font-size: 22px
+	}
+	.not-found-text p {
+		margin: 15px 0
+	}
+	.agent-text h3 {
+		font-size: 22px
+	}
+	.finves-faqs-right.margin-top {
+		margin-top: 30px
+	}
+	.login-left-inn {
+		display: none
+	}
+	.finves-login-page-area:after {
+		display: none
+	}
+	.login-form {
+		width: 100%;
+		float: none
+	}
+	.remember-row {
+		text-align: center
+	}
+	.login-form p {
+		float: none
+	}
+	.register-left-inn {
+		display: none
+	}
+	.pagination {
+		margin-top: 20px
+	}
+	.pagination-box-row p {
+		display: none
+	}
+	.single-blog-page-left h3 {
+		font-size: 25px;
+		line-height: 35px
+	}
+	.blog-post-meta ul {
+		display: block !important;
+	}
+	.blog-content-text {
+		margin-top: 30px;
+	}
+	.post-share-right {
+		text-align: left;
+	}
+	.post-share-left>p,
+	.post-share-right>p {
+		font-size: 14px
+	}
+	.single-comment-box.reply-comment {
+		padding-left: 20px;
+	}
+	.finves-leave-comment form input {
+		width: 100%
+	}
+	.finves-leave-comment form textarea {
+		width: 100%
+	}
+	.contact-form h3,
+	.contact-info h3 {
+		font-size: 25px;
+		line-height: 35px
+	}
+	.contact-form {
+		margin-top: 30px
+	}
+	.contact-form form .col-lg-6:first-child {
+		padding-right: 15px
+	}
+	.contact-form form .col-lg-6:last-child {
+		padding-left: 15px
+	}
+	.finves-header-top-area:after {
+		display: none
+	}
+	.finves-service-details .sidebar-left {
+		margin-top: 0
+	}
+}
+
+
+/* ======================Large Mobile :480px.================== */
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+	.header-top-left {
+		display: none
+	}
+	.header-top-right {
+		text-align: center
+	}
+	.finves-responsive-menu {
+		display: block
+	}
+	.mainmenu {
+		display: none
+	}
+	.header-action {
+		display: none
+	}
+	.site-logo img {
+		width: 35%;
+		margin: 20px 0;
+		position: relative;
+		z-index: 9999;
+	}
+	.finves-main-caption:after {
+		display: none
+	}
+	.slider-text {
+		width: 100%;
+		text-align: center
+	}
+	.slider-text h2 {
+		font-size: 35px;
+		line-height: 40px
+	}
+	.slider-text h3 {
+		font-size: 26px;
+		font-weight: 600;
+		padding-left: 4%
+	}
+	.slider-text p,
+	.slider-text a {
+		display: none
+	}
+	.finves-main-caption {
+		background: rgba(4, 14, 39, 0.48) none repeat scroll 0 0
+	}
+	.finves-main-slide {
+		height: 320px
+	}
+	.finves-slide .owl-next {
+		right: 10px
+	}
+	.finves-slide .owl-prev {
+		left: 10px
+	}
+	.about-right {
+		padding-left: 0;
+		margin-top: 30px
+	}
+	.about-right>h3 {
+		display: none
+	}
+	.about-right h2 {
+		font-size: 28px;
+		line-height: 35px
+	}
+	.about-list li {
+		float: none;
+		width: 100%;
+		margin-right: 0
+	}
+	.call-right {
+		display: none
+	}
+	.site-heading {
+		width: 100%
+	}
+	.site-heading h4 {
+		font-size: 18px
+	}
+	.site-heading h2 {
+		font-size: 30px
+	}
+	.finves-service-area .site-heading h2 {
+		font-size: 30px
+	}
+	.service-slider .owl-next {
+		right: 0
+	}
+	.service-slider .owl-prev {
+		left: 0
+	}
+	.service-text h3 {
+		font-size: 18px
+	}
+	.single-service-box {
+		padding: 15px
+	}
+	.finves-process-area .site-heading h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.process-text h3 {
+		font-size: 22px
+	}
+	.investment-left form p {
+		margin-top: 20px
+	}
+	.investment-left form p button {
+		margin-top: 30px
+	}
+	.investment-right {
+		margin-top: 30px
+	}
+	.investment-left h2,
+	.investment-right h2 {
+		font-size: 30px
+	}
+	.testimonial-box:after {
+		display: none
+	}
+	.testimonial-box {
+		width: 100%
+	}
+	.testimonial-sldier {
+		padding: 20px;
+		border-radius: 20px
+	}
+	.single-testimonial:before {
+		font-size: 35px;
+		left: 10px
+	}
+	.testimonial-image {
+		width: 85px
+	}
+	.testimonial-meta p {
+		font-size: 14px
+	}
+	.testimonial-meta h3 {
+		font-size: 20px
+	}
+	.testimonial-sldier .owl-next {
+		right: 10px
+	}
+	.testimonial-sldier .owl-prev {
+		left: 10px
+	}
+	.single-footer {
+		margin: 20px 0
+	}
+	.finves-breadcromb-area {
+		padding: 50px 0
+	}
+	.breadcromb-box h3 {
+		font-size: 30px;
+		margin-bottom: 5px
+	}
+	.about-list {
+		margin-top: 30px
+	}
+	.counter-text h3 {
+		font-size: 35px
+	}
+	.mission-area-left {
+		margin-left: 25px
+	}
+	.single-mission>h3 {
+		font-size: 22px
+	}
+	.mission-area-right {
+		margin-left: 0;
+		margin-top: 30px
+	}
+	.promo-box h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.service-details-right {
+		margin-top: 30px;
+	}
+	.service-details-right h2 {
+		font-size: 30px;
+		line-height: 40px
+	}
+	.service-right-image .col-lg-6:first-child {
+		padding-right: 15px;
+		margin-bottom: 30px
+	}
+	.service-right-image .col-lg-6:last-child {
+		padding-left: 15px;
+	}
+	.finves-project-area .site-heading {
+		width: 100%
+	}
+	.portfolio-filter li {
+		display: block;
+		margin: 5px 20px
+	}
+	.sidebar-left {
+		margin-top: 30px
+	}
+	.social_widget ul li {
+		margin: 0
+	}
+	.social_widget span {
+		margin-right: 0
+	}
+	.details-project-right {
+		margin-top: 30px
+	}
+	.not-found-text {
+		width: 100%
+	}
+	.not-found-inn span {
+		font-size: 80px
+	}
+	.not-found-inn img {
+		width: 75px
+	}
+	.not-found-text h3 {
+		font-size: 22px
+	}
+	.not-found-text p {
+		margin: 15px 0
+	}
+	.agent-text h3 {
+		font-size: 22px
+	}
+	.finves-faqs-right.margin-top {
+		margin-top: 30px
+	}
+	.login-left-inn {
+		display: none
+	}
+	.finves-login-page-area:after {
+		display: none
+	}
+	.login-form {
+		width: 100%;
+		float: none
+	}
+	.remember-row {
+		text-align: center
+	}
+	.login-form p {
+		float: none
+	}
+	.register-left-inn {
+		display: none
+	}
+	.pagination {
+		margin-top: 20px
+	}
+	.pagination-box-row p {
+		display: none
+	}
+	.single-blog-page-left h3 {
+		font-size: 25px;
+		line-height: 35px
+	}
+	.blog-post-meta ul {
+		display: block !important;
+	}
+	.blog-content-text {
+		margin-top: 30px;
+	}
+	.post-share-right {
+		text-align: left;
+	}
+	.post-share-left>p,
+	.post-share-right>p {
+		font-size: 14px
+	}
+	.single-comment-box.reply-comment {
+		padding-left: 20px;
+	}
+	.finves-leave-comment form input {
+		width: 100%
+	}
+	.finves-leave-comment form textarea {
+		width: 100%
+	}
+	.contact-form h3,
+	.contact-info h3 {
+		font-size: 25px;
+		line-height: 35px
+	}
+	.contact-form {
+		margin-top: 30px
+	}
+	.contact-form form .col-lg-6:first-child {
+		padding-right: 15px
+	}
+	.contact-form form .col-lg-6:last-child {
+		padding-left: 15px
+	}
+	.finves-header-top-area:after {
+		display: none
+	}
+	.finves-service-details .sidebar-left {
+		margin-top: 0
+	}
+}
+

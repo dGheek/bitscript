@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>HYIPER Documentation</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="favicon.png">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <!-- FontAwesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.8.2/js/all.js" integrity="sha384-DJ25uNYET2XCl5ZF++U8eNxPWqcKohUUBUpKGlNLMchM7q4Wjg2CUpjHLaL8yYPH" crossorigin="anonymous"></script>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+    <!-- Plugins CSS -->
+    <link rel="stylesheet" href="assets/plugins/prism/prism.css">
+    <link rel="stylesheet" href="assets/plugins/elegant_font/css/style.css">
+
+    <!-- Theme CSS -->
+    <link id="theme-style" rel="stylesheet" href="assets/css/styles.css">
+
+</head>
+
+<body class="body-green">
+    <div class="page-wrapper">
+        <!-- ******Header****** -->
+        <header id="header" class="header">
+            <div class="container">
+                <div class="branding">
+                    <h1 class="logo">
+                        <a href="index.html">
+                            <img style="width: 8em;" src="assets/images/demo/logo.png">
+                        </a>
+                    </h1>
+
+                </div>
+                <!--//branding-->
+              
+
+            </div>
+            <!--//container-->
+        </header>
+        <!--//header-->
+        <div class="doc-wrapper">
+            <div class="container">
+                <div id="doc-header" class="doc-header text-center">
+                    <h1 class="doc-title"><i class="icon fa fa-paper-plane"></i> Hyiper Documentation</h1>
+                    <div class="meta"><i class="far fa-clock"></i> Last updated: July 1st, 2021</div>
+                </div>
+                <!--//doc-header-->
+                <div class="doc-body row">
+                    <div class="doc-content col-md-9 col-12 order-1">
+                        <div class="content-inner">
+                     
+                            <!--//doc-section-->
+                            <section id="installation-section" class="doc-section">
+                                <h2 class="section-title">Installation</h2>
+                                <div class="section-block">
+                                    <p>This installation covers installs via cPanel or FTp client. You can jump to the section that is preferable to you.
+                                    </p>
+                                </div>
+                                <div id="step1" class="section-block">
+                                    <h3 class="block-title">cPanel Install</h3>
+                                    <ol class="list">
+                                        <li>Upload the zip file to <code>public_html</code> in cPanel</li>
+                                        <li>Unzip it using cPanel tools</li>
+                                        <li>Ensure that the main folders under cPanel are application, system, etc and not Hyiper
+                                        </li>
+                                        <li>Go to <code>/application/config/database.php</code> and change permissions to 777</li>
+                                        <li>Go to <code>/tes.png</code> and <code>/upload</code> folder and change their permissions to 777</li>
+                                        <li>Ensure that the <code>.htaccess</code> file was unzipped/copied to your root folder</li>
+                                    </ol>
+                                    <p>On successful completion, proceed to Database Configuration below.</p>
+                                </div>
+                                <!--//section-block-->
+                                <div id="step2" class="section-block">
+                                    <h3 class="block-title">FTP Install</h3>
+                                    <ol class="list">
+                                        <li>Unzip the folder to a directory locally</li>
+                                        <li>Copy the internal folder structure i.e application, system, assets etc to your site via the FTP client</li>
+                                        <li>Change the permissions for <code>/application/config/database.php</code>, <code>/tes.png</code> and <code>/upload</code> folder to 777</li>
+                                        <li>Ensure that the <code>.htaccess</code> file was unzipped/copied to your root folder</li>
+                                    </ol>
+                                    <p>On successful completion, proceed to Database Configuration below.</p>
+                                </div>
+                                <!--//section-block-->
+                                <div id="step3" class="section-block">
+                                    <h3 class="block-title">Database Configuration</h3>
+                                    <ol>
+                                        <li>Create a database through PHPMyAdmin or whichever SQL client you are using</li>
+                                        <li>Go to <code>Install</code></li>
+                                        <li>import the <code>hyiper_db.sql</code> file to the database that you have created</li>
+                                        <li>After succesful import, go to <code>application > config</code> and edit the <code>database.php</code> file with the following values
+                                            <ul>
+                                                <li><code>$db['default']['username'] = "YOUR_USERNAME";</code></li>
+                                                <li><code>$db['default']['password'] = "YOUR_PASSWORD";</code></li>
+                                                <li><code>$db['default']['database'] = "YOUR_DATABASE_NAME";</code></li>
+                                                <li><code>$db['default']['hostname'] = "YOUR_HOSTNAME";</code> e.g localhost</li>
+                                            </ul>
+                                        </li>
+                                        <li>After succesful edit copy the file and paste it to <code>application > config</code> folder which will replace the default database.php located in this folder.</li>
+                                        <li>Go to the browser and enter your path name e.g localhost/hyiper or your website address. Evrything should work pefectly</li>
+                                    </ol>
+                                    <p>If this does not work, please contact support at at <a href="mailto:chijiokedgeek@gmail.com?Subject=Setup%20support">Email Support</a> OR <a href="https://wa.me/+2348132158748">WhatsApp Support</a></p>
+                                 </div>
+                                <!--//section-block-->
+                             
+                                <div id="step5" class="section-block">
+                                    <h3 class="block-title">.htaccess Error</h3>
+                                    <p>In the event that the .htaccess file is not unzipped directly to your folder, you will face this error. Since it is a dot file, .htaccess might be hidden in some systems, we've documented how to check for it below:</p>
+                                    <ul>
+                                        <li>Cpanel</li>
+                                        <ul>
+                                            <li>Go to File Manager (Files Section)</li>
+                                            <li>Click the top-right Settings button.</li>
+                                            <li>Then on the Preferences window, check the option Show Hidden Files (dotfiles)</li>
+                                            <li>Confirm the action by clicking the Save button</li>
+                                            <li>Now you will see all hidden files (including .htaccess files) in File Manager.</li>
+                                        </ul>
+                                        <li>Once you have confirmed that you can view dot files, check for .htaccess file in root folder (where application was unzipped to)</li>
+                                        <li>If it is not there, please create a .htaccess file in the root folder and add the following to it:</li>
+                                        <code>
+                                            DirectoryIndex index.php
+                                            <br>
+                                            RewriteEngine on
+                                            <br>
+                                            <br>
+                                            RewriteCond $1 !^(index\.php|(.*)\.swf|forums|images|css|downloads|jquery|js|robots\.txt|favicon\.ico)
+                                            <br>
+                                            RewriteCond %{REQUEST_FILENAME} !-f
+                                            <br>
+                                            RewriteCond %{REQUEST_FILENAME} !-d
+                                            <br>
+                                            RewriteRule ^(.*)$ index.php?$1 [L,QSA]
+                                        </code>
+                                        <li>Save the .htaccess file and then go back to the installer and click continue.</li>
+                                    </ul>
+                                    </div>
+                              
+                            </section>
+                            <!--//doc-section-->
+
+                            <section id="code-section" class="doc-section">
+                                <h2 class="section-title">Getting Started</h2>
+                                <div class="section-block">
+                                    <p>
+                                        Go to <code>http://YOUR_URL/login</code> and login with the following credentials
+                                    </p>
+                                    <ul class="list">
+                                        <li>email: <code>admin@hyiper.com</code></li>
+                                        <li>Password: <code>12345678</code></li>
+                                    </ul>
+                                    <p>On successful login navigate to <code>Settings > General Settings</code>
+                                </div>
+                                <!--//section-block-->
+                                <div id="html" class="section-block">
+                                    <h3 class="block-title">Company Information</h3>
+                                    <p>Replace the default data with your own data.</p>
+                                       </div>
+                                <!--//section-block-->
+                                <div id="css" class="section-block">
+                                    <h3 class="block-title">Site Settings</h3>
+                                    <p>Naavigate to the <code>Site Settings</code> tab. In this tab replace the values with your own. This information is important for proper indexing of your site and SEO. You can also add your chat widget code if available.</p>
+                                     </div>
+                                <!--//section-block-->
+                                <div id="sass" class="section-block">
+                                    <h3 class="block-title">Email & SMS Settings</h3>
+                                    <p>Your email settings can be obtained from your hosting provider (or other external mail hosting provider). They are essential for sending out your email notifications. For SMS settings please refer to the <a class="scrollto"
+                                            href="#twilio">Twilio API</a> below.</p>
+                                    <h3>Setting up email</h3>
+                                    <ol>
+                                        <li>Obtain SMTP settings from your hosting provider</li>
+                                        <li>Confirm with your hosting provider that ports 25, 80, 465 or 587 is open and can be used for sending out emails</li>
+                                        <li>Enter SMTP Host given in the respective field e.g smtp@googlemail.com</li>
+                                        <li>Enter port (25, 2525, 80, 465 or 587) e.g 25</li>
+                                        <li>Select SMTP protocol as SMTP eg. SMTP</li>
+                                        <li>Enter SMTP user email (email address created for sending out emails) e.g johndoe@gmail.com</li>
+                                        <li>Enter password for your account e.g 12345678</li>
+                                        <li>Activate email and save the changes</li>
+                                        <li>Run a test by sending out an email</li>
+                                    </ol>
+                                    <p>Please note, if you are setting up gmail, you will need to turn on access to less secure apps in your gmail settings in order for emails to be sent</p>
+                                    <code>Please note that some shared hosting providers disable their outgoing ports. You should confirm with your hosting provider whether you can send out emails with their SMTP settings.</code>
+                                </div>
+                             
+                                <!--//section-block-->
+                                <div id="less" class="section-block">
+                                    <h3 class="block-title">Earnings Settings</h3>
+                                    <p>Allows you to configure your referral earnings easily</p>
+                                     </div>
+                                <!--//section-block-->
+                                <div id="plans" class="section-block">
+                                    <h3 class="block-title">Investment Plans</h3>
+                                    <p>In order for clients to transact using the system, you will need to setup your preferred investment plans by going to <code>Investment Plans</code></p>
+                                    <p>Here you can add new plans, view all your plans, edit and delete plans as per your need.</p>
+                                     </div>
+                                <!--//section-block-->
+                                <div id="team" class="section-block">
+                                    <h3 class="block-title">Manager</h3>
+                                    <p>Hyiper supports role based access to your team members. To set up new users navigate to <code>Users > Managers</code>. Here you can create an employee account and give them access to specific pages, edit their accounts
+                                        or deactivate them when need arises.</p>
+                                    </div>
+                                <!--//section-block-->
+                                <div id="cronjobs" class="section-block">
+                                    <h3 class="block-title">Cron Jobs</h3>
+                                    <p>In order for your clients to receive automated emails on earnings, you will need to set up cron jobs in your hosting provider. For setting up cron jobs on cPanel, follow these steps:</p>
+                                    <ol class="list">
+                                        <li>Log in to cPanel, scroll down to the Advanced section and click the Cron Jobs icon.</li>
+                                        <img class="img-fluid" src="assets/images/demo/cron-jobs-icon.png" alt="elegant icons">
+                                        <li>Scroll down to the Add New Cron Job section. You can either select from the Common Settings drop down menus or fill out your own custom values. (Advisable to set it to once every 5 minutes)</li>
+                                        <img class="img-fluid" src="assets/images/demo/cron-example.png" alt="elegant icons">
+                                        <li>Enter the command <code>wget http:/YOURURL/emailcronjob</code> and click Add New Cron Job.</li>
+                                        <img class="img-fluid" src="assets/images/demo/add-new-cron-button.png" alt="elegant icons">
+                                    </ol>
+                                    <p>A confirmation will appear to confirm that the job has been added.</p>
+                                    <p>If you are not using cPanel, please contact your hosting support on how to setup cron jobs.</p>
+                                    <p>If this does not work, please contact support at at <a href="mailto:chijiokedgeek@gmail.com?Subject=Setup%20support">Email Support</a> OR <a href="https://wa.me/+2348132158748">WhatsApp Support</a></p>
+                                </div>
+                                <!--//section-block-->
+                            </section>
+                            <!--//doc-section-->
+
+                            <section id="API-section" class="doc-section">
+                                <h2 class="section-title">Payments API Config</h2>
+                                <div class="section-block">
+                                    <p>
+                                        Before you start receiving payments automatically on your app. You will have to first setup the Stripe and CoinPayments settings.
+                                    </p>
+                                    <p>Navigate to <code>Settings > Payment APIs</code> and select the API that you want to configure as outlined below</p>
+                                </div>
+                                <!--//section-block-->
+                                <div id="stripe" class="section-block">
+                                    <h3 class="block-title">Stripe API config</h3>
+                                    <p>For you to configure Stripe, you will need a <code>Public Key</code> and a <code>Private Key</code> from your Stripe Account. Follow these steps in order to obtain these keys</p>
+                                    <ol class="list">
+                                        <li>Login to <a href="https://stripe.com">Stripe.com</a> (Sign up if you don't have an account)</li>
+                                        <li>On succesful login you should be redirected to the dashboard where you will see a prompt to <code>Get your live API keys</code> (You will have to activate your account first)</li>
+                                        <li>Copy the Publishable Key and paste in in Public Key on your Stripe API Settings side panel and then copy the Secret Key and paste it on Secret Key</li>
+                                        <li>Before saving, ensure that you have activated the API by changing the status to active.</li>
+                                        <li>Finally, go to <code>Settings > Payment Methods</code>, click on Stripe update and change the status to active on the side panel.</li>
+                                       <li>On succesful reload, the Stripe payment method should be labelled active and you should be able to receive payments via Stripe</li>
+                                    </ol>
+                                </div>
+                                <!--//section-block-->
+                                <div id="coinpayments" class="section-block">
+                                    <h3 class="block-title">CoinPayments API</h3>
+                                    <p>In order for you to accept crypto payment, you will need to obtain a public and private key from the CoinPayments site as outlined below.</p>
+                                    <ol>
+                                        <li>Create an account at <a href="https://coinpayments.net">coinpayments.net</a></li>
+                                        <li>While in Coinpayments obtain the following information that you will use in the next step:
+                                            <ul>
+                                                <li>API Keys (Both public and secret keys) (<a href="https://www.coinpayments.net/index.php?cmd=acct_api_keys">https://www.coinpayments.net/index.php?cmd=acct_api_keys</a>)</li>
+                                                <li>Coinpayment Merchant ID (<a href="https://www.coinpayments.net/acct-settings">https://www.coinpayments.net/acct-settings</a>)</li>
+                                                <li>IPN Key (<a href="https://www.coinpayments.net/acct-settings">https://www.coinpayments.net/acct-settings</a>)</li>
+                                            </ul>
+                                        </li>
+                                        <li>Go back to the Hyiper Platform and navigate to settings > Addons APIs and then click on update under Coinpayments API</li>
+                                       <li>In the Coinpayments form fill in the public key, secret key, merchant ID and IPN Key with the values that you obtained above. In <code>IPN URL</code> input field input a unique code (Not a URL) where Coinpayments
+                                            will send notifications whenever a transaction is succesfully confirmed on the blockchain. Make sure you activate the API.</li>
+                                        <li>Proceed to <code>Settings > Payment Methods</code> and then activate the crypto payments that you would want to use by clicking update and changing the status on the side panel.</li>
+                                       <li>To carry out test transactions, select Litecoin Testnet and activate it (This is a test coinpayments coin, you can obtain free credits here <a href="https://www.coinpayments.net/login?return=acct_req_ltct">https://www.coinpayments.net/login?return=acct_req_ltct</a>)</li>
+                                        <li>Go to your coinpayments here <a href="https://www.coinpayments.net/acct-coins">https://www.coinpayments.net/acct-coins</a> and activate Litecoin Testnet (LTCT)</li>
+                                        <li>Go to client account and test your settings by using the Litecoin Testnet.</li>
+                                        <li>When the LTCT address comes up go to your coins wallet in coinpayments, select Testnet and then send to the address that came up. When successfully confirmed, you will receive an email from both coinpayments and
+                                            your own site.</li>
+                                    </ol>
+                                    <p>If you have succesfully setup all these steps, then your Coinpayments is now ready to be used</p>
+                                    <code>NB: Remember to deactivate the Litecoin Testnet Method</code>
+                                </div>
+                                <!--//section-block-->
+                                <div id="paypal" class="section-block">
+                                    <h3 class="block-title">PayPal API</h3>
+                                    <p>In order for you to accept PayPal payments, you will need to obtain the client ID and secret from your PayPal Developer account as outlined below.</p>
+                                    <ol>
+                                        <li>Create or login to your PayPal developer account at <a href="https://developer.paypal.com/">https://developer.paypal.com/</a></li>
+                                        <li>Follow these steps on how to get your sandbox credentials (Client ID and secret) for testing purposes <a href="https://www.paypal.com/us/smarthelp/article/how-do-i-find-my-sandbox-api-credentials-ts1500">https://www.paypal.com/us/smarthelp/article/how-do-i-find-my-sandbox-api-credentials-ts1500</a></li>
+                                        <li>Go back to the Hyiper Platform, navigate to addons API > Paypal API and update the settings with the credentials obtained from step 2 above. <code>Make sure to set the mode to sandbox</code></li>
+                                        <li>Proceed to <code>Settings > Payment Methods</code> and then activate PayPal by clicking update and changing the status on the side panel.</li>
+                                        <li>At this point you can carry out test transactions</li>
+                                        <li>Once you are comfortable with the functionality you can then decide to go live in your paypal account.(<a href="https://developer.paypal.com/docs/integration/paypal-here/sdk-dev/going-live/">https://developer.paypal.com/docs/integration/paypal-here/sdk-dev/going-live/</a>)</li>
+                                    </ol>
+                                    <code>NB: Once you go live remember to change the mode to Live</code>
+                                    <p>If you have succesfully setup all these steps, then your PayPal is now ready to be used</p>
+                                </div>
+                                <!--//section-block-->
+                                <div id="twilio" class="secttion-block">
+                                    <h3 class="block-title">Twilio API</h3>
+                                    <p>In order for you to send SMS notifications to your clients, you will need to obtain the <code>Account SID</code> and <code>Auth Token</code> from your Twilio account as outlined below.</p>
+                                    <ol>
+                                        <li>Create or login to your Twilio account at <a href="https://twilio.com/">https://twilio.com/</a></li>
+                                        <li>Once you have logged in, go to your Console dashboard to get your Account SID and Auth Token <a href="https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them">https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them</a>.
+                                            Save these somewhere safe</li>
+                                        <li>Follow these instructions to get a Twilio phone number <a href="https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account#get-your-first-twilio-phone-number">https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account#get-your-first-twilio-phone-number</a></li>
+                                        <li>Go back to the Hyiper Platform, navigate to addons API > Twilio API and update with the info obtained above.</li>
+                                        <li>Proceed to <code>Settings > General Settings</code> and go to the Email and SMS settings tab and input your Twilio SMS phone number that was obtained above in the <code>SMS Phone Number</code> field. Make sure to
+                                            activate before saving.</li>
+                                        <li>After saving you can click on Send a test SMS to confirm if your account is functional</li>
+                                    </ol>
+                                    <p>If you have succesfully setup all these steps, then your Hyiper instance can now send out SMS messages.</p>
+                                    <code>NB: If you are using a Twilio trial account, SMS messages will only be sent to accounts that you have verified in the Twilio console. You will need to upgrade to send out SMS messages to unverified phone numbers.</code>
+                                    <p>If this does not work, please contact support at at <a href="mailto:chijiokedgeek@gmail.com?Subject=Setup%20support">Email Support</a> OR <a href="https://wa.me/+2348132158748">WhatsApp Support</a></p>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="gauth" class="secttion-block">
+                                    <h3 class="block-title">Google Authenticator</h3>
+                                    <ol>
+                                    <li>To secure user accounts during login, you can either user Google Authenticator or Authy(indicated below)</li>
+                                    <li>Activate the plugin and then go to settings > General settings and then the site settings tab.</li>
+                                    <li>Select Google Authenticator as the preferred two factor authenticator and activate</li>
+                                    </ol>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="recaptcha" class="secttion-block">
+                                    <h3 class="block-title">Google Recaptcha</h3>
+                                    <p>To setup Google Recaptcha follow the steps below:</p>
+                                    <ol>
+                                        <li>Go to <a href="https://www.google.com/recaptcha/admin/create">https://www.google.com/recaptcha/admin/create</a></li>
+                                        <li>Register a new site. You can use either recaptcha v2 or v3 (both are supported)</li>
+                                        <li>After successful creation, get your recaptcha keys i.e Site Key and Secret Key</li>
+                                        <li>Copy the keys and save them in the Google recaptcha field in Hyiper.</li>
+                                    </ol>
+                                    <p>Make sure that you put the correct recaptcha type and corresponding keys.</p>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="authy" class="secttion-block">
+                                    <h3 class="block-title">Authy</h3>
+                                    <ol>
+                                    <li>Please use these steps to create your own Authy API Key <a href="https://www.twilio.com/docs/authy/twilioauth-sdk/quickstart/obtain-authy-api-key">https://www.twilio.com/docs/authy/twilioauth-sdk/quickstart/obtain-authy-api-key</a></li>
+                                    <li>Afterwards, you can copy the key to the Hyiper field.</li>
+                                    <li>Navigate to Settings > General settings and then select the site settings tab.</li>
+                                    <li>Select Authy as the preferred two factor authenticator and activate</li>
+                                    </ol>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="tawk" class="secttion-block">
+                                    <h3 class="block-title">Tawk</h3>
+                                    <ol>
+                                    <li>Create a Tawk account</li>
+                                    <li>Get the property Id of your tawk chat plugin and save it in the corresponding Hyiper field.</li>
+                                    <li>Navigate to Settings > General settings and then select the site settings tab.</li>
+                                    <li>Select Tawk as the preferred chat plugin and activate</li>
+                                    </ol>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="payeer" class="secttion-block">
+                                    <h3 class="block-title">Payeer</h3>
+                                    <p>Create a Payeer account</p>
+                                    <p>Get the secret and merchant ID's from your Payeer account and save them in the corresponding Hyiper fields.</p>
+                                    <p>Once you've setup add the following urls in your Payeer account: </p>
+                                    <ul>
+                                        <li>Success url - https://YOURURL/payeer/success</li>
+                                        <li>Fail url -  https://YOURURL/payeer/cancelled</li>
+                                        <li>Status url - https://YOURURL/payeer/ipn</li>
+                                    </ul>
+                                </div>
+                                <!--//section-block-->
+                                <!--//section-block-->
+                                <div id="paystack" class="secttion-block">
+                                    <h3 class="block-title">Paystack</h3>
+                                    <p>Create a Paystack account</p>
+                                    <p>Get the public key and secret key from your Paystack account and save them in the corresponding Hyiper fields.</p>
+                                </div>
+                                <!--//section-block-->
+                            </section>
+                            <!--//doc-section-->
+
+                            </section>
+                            <!--//doc-section-->
+                        </div>
+                        <!--//content-inner-->
+                    </div>
+                    <!--//doc-content-->
+                    <div class="doc-sidebar col-md-3 col-12 order-0 d-none d-md-flex">
+                        <div id="doc-nav" class="doc-nav">
+
+                            <nav id="doc-menu" class="nav doc-menu flex-column sticky">
+                                <a class="nav-link scrollto" href="#download-section">Changelog</a>
+                                <a class="nav-link scrollto" href="#update-section">Updating Previous Installation</a>
+                                <a class="nav-link scrollto" href="#installation-section">Installation</a>
+                                <nav class="doc-sub-menu nav flex-column">
+                                    <a class="nav-link scrollto" href="#step1">cPanel install</a>
+                                    <a class="nav-link scrollto" href="#step2">FTP Install</a>
+                                    <a class="nav-link scrollto" href="#step3">Database Configuration</a>
+                                    
+                                    <a class="nav-link scrollto" href="#step5">.htaccess Error</a>
+                                    
+                                </nav>
+                                <!--//nav-->
+                                <a class="nav-link scrollto" href="#code-section">Getting Started</a>
+                                <nav class="doc-sub-menu nav flex-column">
+                                    <a class="nav-link scrollto" href="#html">Company Information</a>
+                                    <a class="nav-link scrollto" href="#css">Site Settings</a>
+                                    <a class="nav-link scrollto" href="#sass">Email & SMS Settings</a>
+                                    <a class="nav-link scrollto" href="#less">Earnings Settings</a>
+                                    <a class="nav-link scrollto" href="#plans">Investment Plans</a>
+                                    <a class="nav-link scrollto" href="#team">Managers</a>
+                                    <a class="nav-link scrollto" href="#cronjobs">Cron Jobs</a>
+                                </nav>
+                                <!--//nav-->
+                                <a class="nav-link scrollto" href="#API-section">Apps Config</a>
+                                <nav class="doc-sub-menu nav flex-column">
+                                    <a class="nav-link scrollto" href="#stripe">Stripe API</a>
+                                    <a class="nav-link scrollto" href="#coinpayments">CoinPayments API</a>
+                                    <a class="nav-link scrollto" href="#paypal">Paypal API</a>
+                                    <a class="nav-link scrollto" href="#twilio">Twilio API</a>
+                                    <a class="nav-link scrollto" href="#gauth">Google Authenticator API</a>
+                                    <a class="nav-link scrollto" href="#recaptcha">Recaptcha API</a>
+                                    <a class="nav-link scrollto" href="#authy">Authy API</a>
+                                    <a class="nav-link scrollto" href="#tawk">Tawk API</a>
+                                    <a class="nav-link scrollto" href="#payeer">Payeer API</a>
+                                    <a class="nav-link scrollto" href="#paystack">Paystack API</a>
+                                </nav>
+                                <!--//nav-->
+                            </nav>
+                            <!--//doc-menu-->
+
+                        </div>
+                    </div>
+                    <!--//doc-sidebar-->
+                </div>
+                <!--//doc-body-->
+            </div>
+            <!--//container-->
+        </div>
+        <!--//doc-wrapper-->
+    </div>
+    <!--//page-wrapper-->
+
+    <footer id="footer" class="footer text-center">
+        <div class="container">
+            <!--/* This template is released under the Creative Commons Attribution 3.0 License. Please keep the attribution link below when using for your own project. Thank you for your support. :) If you'd like to use the template without the attribution, you can buy the commercial license via our website: themes.3rdwavemedia.com */-->
+            <small class="copyright">Designed with <i class="fas fa-heart"></i> by <a href="https://themes.3rdwavemedia.com/" target="_blank">Xiaoying Riley</a> for developers</small>
+
+        </div>
+        <!--//container-->
+    </footer>
+    <!--//footer-->
+
+
+    <!-- Main Javascript -->
+    <script type="text/javascript" src="assets/plugins/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/prism/prism.js"></script>
+    <script type="text/javascript" src="assets/plugins/jquery-scrollTo/jquery.scrollTo.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/stickyfill/dist/stickyfill.min.js"></script>
+    <script type="text/javascript" src="assets/js/main.js"></script>
+
+</body>
+
+</html>
