@@ -35,12 +35,12 @@
 */
 
 // The following values will probably need to be changed.
-$db['default']['username'] = "bitmzgue_bituser";
-$db['default']['password'] = "Passme4real";
-$db['default']['database'] = "bitmzgue_bitscript";
+$db['default']['username'] = "Q3GfnaFQr8";
+$db['default']['password'] = "RjLK7BTa3A";
+$db['default']['database'] = "Q3GfnaFQr8";
 
 // The following values can probably stay the same.
-$db['default']['hostname'] = "localhost";
+$db['default']['hostname'] = "remotemysql.com";
 $db['default']['dbdriver'] = "mysqli"; //Updated to latest driver.
 $db['default']['dbprefix'] = "";
 $db['default']['pconnect'] = FALSE;
