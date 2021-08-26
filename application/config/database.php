@@ -35,9 +35,9 @@
 */
 
 // The following values will probably need to be changed.
-$db['default']['username'] = "root";
-$db['default']['password'] = "";
-$db['default']['database'] = "smartrex_db";
+$db['default']['username'] = "bitmzgue_bituser";
+$db['default']['password'] = "Passme4real";
+$db['default']['database'] = "bitmzgue_bitscript";
 
 // The following values can probably stay the same.
 $db['default']['hostname'] = "localhost";
