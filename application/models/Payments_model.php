@@ -81,6 +81,15 @@ class Payments_model extends CI_Model
         return $query->result();  
     }
 
+    function getAPI($api){
+        $this->db->select('*');
+        $this->db->from('tbl_addons_api');
+        $this->db->where('id', $api);
+        $query = $this->db->get();
+        
+        return $query->result(); 
+    }
+
     function getAllPeriods()
     {
         $this->db->select('*');
@@ -196,6 +205,7 @@ class Payments_model extends CI_Model
         $this->db->select('*');
         $this->db->from('tbl_payment_methods');
         $this->db->where('API !=', 1);
+        $this->db->where('iswithdrawable', 1);
         $query = $this->db->get();
         
         return $query->result();  

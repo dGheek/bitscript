@@ -5,22 +5,11 @@ require APPPATH . '/libraries/BaseController.php';
 class perfectmoney extends BaseController {
     public function __construct() {
         parent::__construct();
-        $this->load->library("session");
-        $this->load->helper('url');
-        $this->load->model('settings_model');
-        $this->load->model('payments_model');      
-        $this->load->model('plans_model');   
-        $this->load->model('transactions_model');    
-        $this->load->model('user_model');    
-        $this->load->model('email_model');  
-        $this->load->model('twilio_model');
-        $this->load->model('perfectmoney_model');
     }
 
     function success(){
-        $success = $this->IPN_Response();
-
         $this->isLoggedIn();  
+        $this->isVerified(); 
         $this->global['pageTitle'] = 'Deposit succesful';
         $this->global['displayBreadcrumbs'] = true; 
         $this->global['breadcrumbs'] = 'Deposit'.' <span class="breadcrumb-arrow-right"></span> '.'Success';
@@ -28,7 +17,8 @@ class perfectmoney extends BaseController {
     }
 
     function canceled(){
-        $this->isLoggedIn();  
+        $this->isLoggedIn(); 
+        $this->isVerified();  
         $this->global['pageTitle'] = 'Deposit failed';
         $this->global['displayBreadcrumbs'] = true; 
         $this->global['breadcrumbs'] = 'Deposit'.' <span class="breadcrumb-arrow-right"></span> '.'Canceled';
@@ -109,9 +99,10 @@ class perfectmoney extends BaseController {
                         $earningsType = 'interest';
                         $startDate = date('Y-m-d H:i:s', strtotime($date."+$payoutsInterval hours"));
                         $endDate = date('Y-m-d H:i:s', strtotime($date."+$maturityPeriod hours"));
+                        $businessDays = $plan->businessDays;
 
                         //Add the deposit and earnings
-                        $result1 = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod);
+                        $result1 = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays, $plan->principalReturn);
 
                         //Send email       
                         if($result1)
@@ -183,7 +174,7 @@ class perfectmoney extends BaseController {
         else 
         {
             //Get the referrer ID
-            $referrerID = $this->user_model->getReferrerID($userID);
+            $referrerID = $this->referrals_model->getReferrerID($userID);
 
             //First Let's check whether this user has been referred by anyone
             if($referrerID != null) {
@@ -241,7 +232,7 @@ class perfectmoney extends BaseController {
                         // Here we get the first referredID whose making the deposit
                         $referrerId_[0] = $userID;
                         //We then get multiple referrerIds based on the number of levels
-                        $referrerId_[$i + 1] = $this->user_model->getReferrerID($referrerId_[$i]);
+                        $referrerId_[$i + 1] = $this->referrals_model->getReferrerID($referrerId_[$i]);
                         //We then procced to put it in an array with referrerId_[1] as the first Id
                         $earningsData[] = (object) [
                             "id" => $referrerId_[$i + 1],

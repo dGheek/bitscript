@@ -51,10 +51,36 @@ $(document).ready(function(){
             $('#currency_exchange').hide();
         }
     });
+    $('input[name=refearningsactive]').change(function(){
+        var value = $( 'input[name=refearningsactive]:checked' ).val();
+        if(value == 1){
+            $('#reffreqselect').hide();
+            $('#disrefselect').hide();
+            $('#reftypesel').hide();
+        } else {
+            $('#reffreqselect').show();
+            $('#disrefselect').show();
+            $('#reftypesel').show();
+        }
+    });
+    $('input[name=kycstatus]').change(function(){
+        var value = $( 'input[name=kycstatus]:checked' ).val();
+        if(value == 1){
+            $('#allowwithdrawalskycfield').show();
+            $('#allowdepositskycfield').show();
+            $('#verifykycfield').show();
+        } else {
+            $('#allowwithdrawalskycfield').hide();
+            $('#allowdepositskycfield').hide();
+            $('#verifykycfield').hide();
+        }
+    });
     $(".form").submit(function(e) {
         e.preventDefault();
         var actionurl = e.currentTarget.action;
         var formid = e.currentTarget.id;
+        $('.error').html('');
+        $('.form-control').removeClass('inputTxtError');
         $.ajax({
             url: actionurl,
             type: 'post',

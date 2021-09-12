@@ -52,6 +52,9 @@ $(".methodFormButton").submit(function(e) {
                 $('#secret-key').show();
                 $('#public_key_title').html('Account SID');
                 $('#secret_key_title').html('Auth Token');
+                $('#pKey').attr("placeholder", "Account SID");
+                $('#sKey').attr("placeholder", "Auth Token");
+                $('#pKey').attr("type", "password");
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
                 $('#mode').hide();
@@ -60,12 +63,16 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Payeer'){
                 $('#secret-key').show();
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#merchID').show();
                 $('#publicKey').hide();
@@ -77,6 +84,7 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Stripe'){
@@ -84,6 +92,9 @@ $(".methodFormButton").submit(function(e) {
                 $('#secret-key').show();
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -93,6 +104,7 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'PayPal'){
@@ -100,6 +112,9 @@ $(".methodFormButton").submit(function(e) {
                 $('#secret-key').show();
                 $('#public_key_title').html('Client ID');
                 $('#secret_key_title').html('Secret');
+                $('#pKey').attr("placeholder", "Client ID");
+                $('#sKey').attr("placeholder", "Secret");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -110,11 +125,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Skrill'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -125,11 +144,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Block.io'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -140,10 +163,13 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Authy'){
                 $('#public_key_title').html('API Key');
+                $('#pKey').attr("placeholder", "API Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').hide();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -154,11 +180,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Google Recaptcha'){
                 $('#public_key_title').html('Site Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Site Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -170,10 +200,13 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Tawk.To'){
-                $('#public_key_title').html('Property ID');
+                $('#public_key_title').html('Direct Chat Link');
+                $('#pKey').attr("placeholder", "https://tawk.to/chat/60729aeff7ce4727093a8c20/default");
+                $('#pKey').attr("type", "text");
                 $('#secret-key').hide();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -184,11 +217,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Monnify'){
                 $('#public_key_title').html('API Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "API Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#contractCodeID').show();
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
@@ -198,11 +235,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Paystack'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#IPN_fields').hide();
                 $('#merchID').hide();
                 $('#publicKey').show();
@@ -212,11 +253,15 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'CoinPayments'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#secret-key').show();
                 $('#IPN_fields').show();
                 $('#merchID').hide();
@@ -230,6 +275,7 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'BTCPay'){
@@ -243,11 +289,33 @@ $(".methodFormButton").submit(function(e) {
                 $('#IPN_fields').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
+                $('#merchName').hide();
+            }
+            if(content.name == 'Coinbase Commerce'){
+                $('#public_key_title').html('API Key');
+                $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "API Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
+                $('#IPN_fields').hide();
+                $('#merchID').hide();
+                $('#publicKey').show();
+                $('#secret-key').show();
+                $('#mode').hide();
+                $('#g-version').hide();
+                $('#urlID').hide();
+                $('#payee_account').hide();
+                $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.name == 'Google Authenticator'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#publicKey').hide();
                 $('#secret-key').hide();
                 $('#IPN_fields').hide();
@@ -258,6 +326,7 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
                 $('#merchName').hide();
             }
             if(content.ref == 'BT'){
@@ -267,6 +336,9 @@ $(".methodFormButton").submit(function(e) {
             if(content.name == 'AdvCash'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("placeholder", "Public Key");
+                $('#sKey').attr("placeholder", "Secret Key");
+                $('#pKey').attr("type", "password");
                 $('#publicKey').show();
                 $('#secret-key').show();
                 $('#merchName').show();
@@ -282,15 +354,20 @@ $(".methodFormButton").submit(function(e) {
                 $('#urlID').hide();
                 $('#payee_account').hide();
                 $('#payee_name').hide();
+                $('#passphrase').hide();
             }
             if(content.name == 'Perfect Money'){
                 $('#public_key_title').html('Public Key');
                 $('#secret_key_title').html('Secret Key');
+                $('#pKey').attr("type", "password");
                 $('#secret-key').hide();
                 $('#payee_account').show();
                 $('#payee_name').show();
+                $('#passphrase').show();
                 $('#publicKey').hide();
-                $('#merchantID1').val(content.merchantID);
+                $('#payee_account_inp').val(content.merchantID);
+                $('#payee_name_inp').val(content.secretKey);
+                $('#passphrase_inp').val(content.publicKey);
                 $('#IPN_fields').hide();
                 $('#mode').hide();
                 $('#contractCodeID').hide();

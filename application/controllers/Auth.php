@@ -19,22 +19,6 @@ class Auth extends BaseController
 
         //Site Data
         $this->companyInfo();
-
-        //Models
-        $this->load->model('login_model');
-        $this->load->model('settings_model');
-        $this->load->model('email_model');
-        $this->load->model('twilio_model');
-        $this->load->model('addons_model');
-
-
-        $site_lang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-		$this->load->helper('language');
-        $this->lang->load('common',$site_lang);
-        $this->lang->load('registration',$site_lang);
-        $this->lang->load('login',$site_lang);
-        $this->lang->load('validation',$site_lang);
     }
 
     /**
@@ -76,7 +60,8 @@ class Auth extends BaseController
 
         //Page Data
         $this->global['pageTitle']  = 'Signup Page';
-        $data['companyName']        = $this->settings_model->getsettingsInfo()['name'];
+        $companyInfo                = $this->settings_model->getsettingsInfo();
+        $data['companyName']        = $companyInfo['name'];
         $data["code"]               = $refcode;
 
         //Helpers
@@ -105,6 +90,14 @@ class Auth extends BaseController
         $this->form_validation->set_rules('accept_terms','Terms and Conditions','required', array(
             'required' => lang('this_field_is_required')
         ));
+
+        if($companyInfo['google_recaptcha'] != 0){
+            if($companyInfo['recaptcha_version'] == 'v2'){
+                $this->form_validation->set_rules('g-recaptcha-response','Captcha','callback__recaptcha');
+            } else if($companyInfo['recaptcha_version'] == 'v3') {
+                $this->form_validation->set_rules('recaptcha_response','Captcha','callback__recaptcha');
+            }
+        }
         
         if($this->form_validation->run() == FALSE)
         {
@@ -161,14 +154,14 @@ class Auth extends BaseController
             } else {
                 
                 $this->load->helper('string');
-                $code = random_string('alnum',3);
+                $code = random_string('alnum',8);
                 $userInfo = array(
                     'email'=>$email, 
                     'password'=>getHashedPassword($password), 
                     'roleId'=>$roleId, 
                     'firstName'=> $fname,
                     'lastName'=> $lname, 
-                    'refCode' => $fname.$code,
+                    'refCode' => $code,
                     'createdDtm'=> $dateCreated
                 );
                 $this->load->model('user_model');
@@ -214,7 +207,7 @@ class Auth extends BaseController
                     $result2 = $this->login_model->loginMe($email, $password);
                     if($ref) 
                     {
-                        $isrefcode = $this->user_model->getReferralId($ref);
+                        $isrefcode = $this->referrals_model->getReferralId($ref);
                         if($isrefcode)
                         {
                             $referrer = $isrefcode->userId;
@@ -225,7 +218,7 @@ class Auth extends BaseController
                                 'referredId' => $referred,
                                 'createdDtm' => $created
                             );
-                            $this->user_model->addReferral($referralInfo);
+                            $this->referrals_model->addReferral($referralInfo);
                         }
                     } 
                     //$lastLogin = $this->login_model->lastLoginInfo($result2->userId);
@@ -242,13 +235,13 @@ class Auth extends BaseController
                     $loginInfo = array("userId"=>$result2->userId, "sessionData" => json_encode($sessionArray), "machineIp"=>$_SERVER['REMOTE_ADDR'], "userAgent"=>getBrowserAgent(), "agentString"=>$this->agent->agent_string(), "platform"=>$this->agent->platform());
                     $this->login_model->lastLogin($loginInfo);
                     if (!$this->input->is_ajax_request()) {
-                    redirect('/dashboard');
+                        redirect('/dashboard');
                     } else
                     {
                         $array = array(
                             'success' => true,
                             'msg' => html_escape(lang('signup_successful')),
-                            'url' => base_url().'dashboard',
+                            'url' => $companyInfo['kyc_status'] == 0 ? base_url('dashboard') : base_url('verify'),
                             "csrfTokenName" => $csrfTokenName,
                             "csrfHash" => $csrfHash,
                         );
@@ -271,7 +264,7 @@ class Auth extends BaseController
             }            
         }
         if (!$this->input->is_ajax_request()) {
-        $this->loadViews('/auth/register', $this->global, $data);
+            $this->loadViews('/auth/register', $this->global, $data);
         }
     }
 
@@ -546,56 +539,7 @@ class Auth extends BaseController
         }
     }
 
-    public function _recaptcha($str)
-    {
-        $companyInfo = $this->settings_model->getsettingsInfo();
-        $recaptchaInfo = $this->addons_model->get_addon_info('Google Recaptcha');
-        $recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify';
-        $recaptcha_secret = $recaptchaInfo->secret_key;
-        $recaptcha_response = $str;
-
-        if($companyInfo['recaptcha_version'] == 'v2'){
-            $ip=$_SERVER['REMOTE_ADDR'];
-            $url=$recaptcha_url."?secret=".$recaptcha_secret."&response=".$recaptcha_response."&remoteip=".$ip;
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-            curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.16) Gecko/20110319 Firefox/3.6.16");
-            $res = curl_exec($curl);
-            curl_close($curl);
-            $res= json_decode($res, true);
-            //reCaptcha success check
-            if($res['success'])
-            {
-                return TRUE;
-            }
-            else
-            {
-                $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
-                return FALSE;
-            }
-        } else if($companyInfo['recaptcha_version'] == 'v3'){
-            // Make and decode POST request:
-            $recaptcha = file_get_contents($recaptcha_url . '?secret=' . $recaptcha_secret . '&response=' . $recaptcha_response);
-            $res = json_decode($recaptcha);
-
-            //print_r($res);
-            if($res->success == 1)
-            {
-                // Take action based on the score returned:
-                if ($res->score >= 0.5) {
-                    return TRUE;
-                } else {
-                    $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
-                    return FALSE;
-                }
-            } else {
-                $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
-                return FALSE;
-            }
-        }
-    }
+    
 
     /**
      * This function used to load forgot password view

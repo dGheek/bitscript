@@ -17,29 +17,7 @@ class Plans extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('plans_model');
-        $this->load->model('payments_model');
-        $this->load->model('user_model');
-        $this->load->model('login_model');
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
         $this->isLoggedIn(); 
-        
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
     }
 
     /**

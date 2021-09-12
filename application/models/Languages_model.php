@@ -9,7 +9,7 @@
  */
 class Languages_model extends CI_Model
 {
-    function addLanguage($info)
+    function addLanguage($info, $id)
     {
         $this->db->trans_start();
         $this->db->insert('tbl_languages', $info);
@@ -18,7 +18,7 @@ class Languages_model extends CI_Model
 
         if($insert_id > 0){
             $this->db->select('lang_id, module, key, translation');// select your filed
-            $this->db->where('lang_id', 1);
+            $this->db->where('lang_id', $id);
             $result = $this->db->get('tbl_translations')->result(); // get result from table
             $translations_array = array();
             foreach($result as $row)
@@ -166,6 +166,20 @@ class Languages_model extends CI_Model
         $query = $this->db->get();
         
         $result = $query->result();        
+        return $result;
+    }
+
+    function deleteLang($id){
+        $this->db->trans_start();
+
+        $result = $this->db->delete('tbl_languages', array('id' => $id));
+
+        if($result == true){
+            $result = $this->db->delete('tbl_translations', array('lang_id' => $id));
+        }
+        
+        $this->db->trans_complete();  
+
         return $result;
     }
 

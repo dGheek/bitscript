@@ -5,33 +5,7 @@ require APPPATH . '/libraries/BaseController.php';
 class paypal extends BaseController {
     public function __construct() {
         parent::__construct();
-        $this->load->library("session");
-        $this->load->helper('url');
-        $this->load->model('settings_model');
-        $this->load->model('payments_model');      
-        $this->load->model('plans_model');   
-        $this->load->model('transactions_model');    
-        $this->load->model('user_model');    
-        $this->load->model('email_model');  
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
         $this->isLoggedIn();  
-
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
     }
 
     function success(){
@@ -85,7 +59,7 @@ class paypal extends BaseController {
             $businessDays = $plan->businessDays;
 
             //Add the deposit and earnings
-            $result = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays);
+            $result = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays, $plan->principalReturn);
 
             //Send email       
             if($result)
@@ -175,114 +149,245 @@ class paypal extends BaseController {
 
     function referralEarnings($userID = NULL, $amount = NULL, $depositID = NULL)
     {
-        if($userID == Null || $amount == Null || $depositID == Null)
-        {
+        //Run a check to confirm if referral earningsa has been activated
+        $refactive = $this->settings_model->getSettingsInfo()['refactive'];
+
+        if($refactive == 1){ //Earnings has been disabled
             return false;
-            //print_r('Either the user Id, amount or depositid is not available');
-        }
-        else 
-        {
-            //Get the referrer ID
-            $referrerID = $this->user_model->getReferrerID($userID);
-
-            //First Let's check whether this user has been referred by anyone
-            if($referrerID != null) {
-                //Check the referral method & interest
-                $refMethod = $this->settings_model->getSettingsInfo()['refType'];
-                $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
-                $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
-
-                if($refMethod == 'simple')
-                {
-                    $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
-
-                    //Calculate the referrer's earnings
-                    $earnings = $amount * ($refInterest/100);
-
-                    //for generating the txn code
-                    $this->load->helper('string');
-
-                    //Insert earnings into the earnings table
-                    $array = array(
-                        'type' => 'referral',
-                        'userId'=> $referrerID,
-                        'depositId' => $depositID,
-                        'txnCode' => 'PO'.random_string('alnum',8),
-                        'amount' => $earnings,
-                        'createdDtm'=> date("Y-m-d H:i:s")
-                    );
-
-                    if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
-                        $result = $this->transactions_model->addNewEarning($array);
-                    } else if($deposit_only_payouts == 0) {
-                        $result = $this->transactions_model->addNewEarning($array);
-                    } else {
-                        $result = 0;
-                    }
-
-                    if($result > 0)
-                    {
-                        return true;
-                        //print_r('New simple earning added');
-                    } else 
+        } else {
+            //Check frequency of earnings
+            /**
+             * 1 - Only once
+             * 0 - All deposits
+             */
+            $reffreq = $this->settings_model->getSettingsInfo()['reffrequency']; 
+            if($reffreq == 1){
+                //Run a check to confirm if the user has more than 1 deposit
+                $numberofdeposits = $this->transactions_model->depositsListingCount(NULL, $userID);
+                if($numberofdeposits > 1){
+                    return false;
+                } else {
+                    if($userID == Null || $amount == Null || $depositID == Null)
                     {
                         return false;
-                        //print_r('New simple earning not added');
+                        //print_r('Either the user Id, amount or depositid is not available');
                     }
-
-                } else if($refMethod == 'multiple')
-                {
-                    //Find the referral levels
-                    $levels_array = explode(',', $refInterest);
-                    $levelsCount = count($levels_array);
-
-                    //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
-                    for ($i=0; $i<$levelsCount; $i++) {
-                        // Here we get the first referredID whose making the deposit
-                        $referrerId_[0] = $userID;
-                        //We then get multiple referrerIds based on the number of levels
-                        $referrerId_[$i + 1] = $this->user_model->getReferrerID($referrerId_[$i]);
-                        //We then procced to put it in an array with referrerId_[1] as the first Id
-                        $earningsData[] = (object) [
-                            "id" => $referrerId_[$i + 1],
-                            "interest" => $levels_array[$i],
-                            "amount" => $amount * $levels_array[$i]/100
-                        ];
-                    }
-
-                    //for generating the txn code
-                    $this->load->helper('string');
-
-                    //We then take the earnings data and remove all null Ids in the array to get the users
-                    //that we should put soe earnings for
-                    foreach($earningsData as $data) {
-                        if($data->id != null) {
-                            $array[] = array(
-                                'type' => 'referral',
-                                'userId'=> $data->id,
-                                'depositId' => $depositID,
-                                'txnCode' => 'PO'.random_string('alnum',8),
-                                'amount' => $data->amount,
-                                'createdDtm'=>date("Y-m-d H:i:s")
-                            );
-                        }
-                    };
-
-                    //Insert the data
-                    $result = $this->transactions_model->addNewEarnings($array);
-
-                    if($result > 0)
+                    else 
                     {
-                        return true;
-                    } else 
-                    {
-                        return false;
+                        //Get the referrer ID
+                        $referrerID = $this->referrals_model->getReferrerID($userID);
+        
+                        //First Let's check whether this user has been referred by anyone
+                        if($referrerID != null) {
+                            //Check the referral method & interest
+                            $refMethod = $this->settings_model->getSettingsInfo()['refType'];
+                            $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
+                            $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
+        
+                            if($refMethod == 'simple')
+                            {
+                                $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
+        
+                                //Calculate the referrer's earnings
+                                $earnings = $amount * ($refInterest/100);
+        
+                                //for generating the txn code
+                                $this->load->helper('string');
+        
+                                //Insert earnings into the earnings table
+                                $array = array(
+                                    'type' => 'referral',
+                                    'userId'=> $referrerID,
+                                    'depositId' => $depositID,
+                                    'txnCode' => 'PO'.random_string('alnum',8),
+                                    'amount' => $earnings,
+                                    'createdDtm'=> date("Y-m-d H:i:s")
+                                );
+        
+                                if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
+                                    $result = $this->transactions_model->addNewEarning($array);
+                                } else if($deposit_only_payouts == 0) {
+                                    $result = $this->transactions_model->addNewEarning($array);
+                                } else {
+                                    $result = 0;
+                                }
+        
+                                if($result > 0)
+                                {
+                                    return true;
+                                    //print_r('New simple earning added');
+                                } else 
+                                {
+                                    return false;
+                                    //print_r('New simple earning not added');
+                                }
+        
+                            } else if($refMethod == 'multiple')
+                            {
+                                //Find the referral levels
+                                $levels_array = explode(',', $refInterest);
+                                $levelsCount = count($levels_array);
+        
+                                //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
+                                for ($i=0; $i<$levelsCount; $i++) {
+                                    // Here we get the first referredID whose making the deposit
+                                    $referrerId_[0] = $userID;
+                                    //We then get multiple referrerIds based on the number of levels
+                                    $referrerId_[$i + 1] = $this->referrals_model->getReferrerID($referrerId_[$i]);
+                                    //We then procced to put it in an array with referrerId_[1] as the first Id
+                                    $earningsData[] = (object) [
+                                        "id" => $referrerId_[$i + 1],
+                                        "interest" => $levels_array[$i],
+                                        "amount" => $amount * $levels_array[$i]/100
+                                    ];
+                                }
+        
+                                //for generating the txn code
+                                $this->load->helper('string');
+        
+                                //We then take the earnings data and remove all null Ids in the array to get the users
+                                //that we should put soe earnings for
+                                foreach($earningsData as $data) {
+                                    if($data->id != null) {
+                                        $array[] = array(
+                                            'type' => 'referral',
+                                            'userId'=> $data->id,
+                                            'depositId' => $depositID,
+                                            'txnCode' => 'PO'.random_string('alnum',8),
+                                            'amount' => $data->amount,
+                                            'createdDtm'=>date("Y-m-d H:i:s")
+                                        );
+                                    }
+                                };
+        
+                                //Insert the data
+                                $result = $this->transactions_model->addNewEarnings($array);
+        
+                                if($result > 0)
+                                {
+                                    return true;
+                                } else 
+                                {
+                                    return false;
+                                }
+                            }
+                        } else 
+                        {
+                            return false;
+                        }   
                     }
                 }
-            } else 
-            {
-                return false;
-            }   
+            } else {
+                if($userID == Null || $amount == Null || $depositID == Null)
+                {
+                    return false;
+                    //print_r('Either the user Id, amount or depositid is not available');
+                }
+                else 
+                {
+                    //Get the referrer ID
+                    $referrerID = $this->referrals_model->getReferrerID($userID);
+
+                    //First Let's check whether this user has been referred by anyone
+                    if($referrerID != null) {
+                        //Check the referral method & interest
+                        $refMethod = $this->settings_model->getSettingsInfo()['refType'];
+                        $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
+                        $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
+
+                        if($refMethod == 'simple')
+                        {
+                            $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
+
+                            //Calculate the referrer's earnings
+                            $earnings = $amount * ($refInterest/100);
+
+                            //for generating the txn code
+                            $this->load->helper('string');
+
+                            //Insert earnings into the earnings table
+                            $array = array(
+                                'type' => 'referral',
+                                'userId'=> $referrerID,
+                                'depositId' => $depositID,
+                                'txnCode' => 'PO'.random_string('alnum',8),
+                                'amount' => $earnings,
+                                'createdDtm'=> date("Y-m-d H:i:s")
+                            );
+
+                            if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
+                                $result = $this->transactions_model->addNewEarning($array);
+                            } else if($deposit_only_payouts == 0) {
+                                $result = $this->transactions_model->addNewEarning($array);
+                            } else {
+                                $result = 0;
+                            }
+
+                            if($result > 0)
+                            {
+                                return true;
+                                //print_r('New simple earning added');
+                            } else 
+                            {
+                                return false;
+                                //print_r('New simple earning not added');
+                            }
+
+                        } else if($refMethod == 'multiple')
+                        {
+                            //Find the referral levels
+                            $levels_array = explode(',', $refInterest);
+                            $levelsCount = count($levels_array);
+
+                            //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
+                            for ($i=0; $i<$levelsCount; $i++) {
+                                // Here we get the first referredID whose making the deposit
+                                $referrerId_[0] = $userID;
+                                //We then get multiple referrerIds based on the number of levels
+                                $referrerId_[$i + 1] = $this->referrals_model->getReferrerID($referrerId_[$i]);
+                                //We then procced to put it in an array with referrerId_[1] as the first Id
+                                $earningsData[] = (object) [
+                                    "id" => $referrerId_[$i + 1],
+                                    "interest" => $levels_array[$i],
+                                    "amount" => $amount * $levels_array[$i]/100
+                                ];
+                            }
+
+                            //for generating the txn code
+                            $this->load->helper('string');
+
+                            //We then take the earnings data and remove all null Ids in the array to get the users
+                            //that we should put soe earnings for
+                            foreach($earningsData as $data) {
+                                if($data->id != null) {
+                                    $array[] = array(
+                                        'type' => 'referral',
+                                        'userId'=> $data->id,
+                                        'depositId' => $depositID,
+                                        'txnCode' => 'PO'.random_string('alnum',8),
+                                        'amount' => $data->amount,
+                                        'createdDtm'=>date("Y-m-d H:i:s")
+                                    );
+                                }
+                            };
+
+                            //Insert the data
+                            $result = $this->transactions_model->addNewEarnings($array);
+
+                            if($result > 0)
+                            {
+                                return true;
+                            } else 
+                            {
+                                return false;
+                            }
+                        }
+                    } else 
+                    {
+                        return false;
+                    }   
+                }
+            }
         }
     } 
 }

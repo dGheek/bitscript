@@ -35,12 +35,12 @@
 */
 
 // The following values will probably need to be changed.
-$db['default']['username'] = "Q3GfnaFQr8";
-$db['default']['password'] = "RjLK7BTa3A";
-$db['default']['database'] = "Q3GfnaFQr8";
+$db['default']['username'] = "bitmzgue_smartInvestor";
+$db['default']['password'] = "Passme4real";
+$db['default']['database'] = "bitmzgue_smartInvest";
 
 // The following values can probably stay the same.
-$db['default']['hostname'] = "remotemysql.com";
+$db['default']['hostname'] = "127.0.0.1";
 $db['default']['dbdriver'] = "mysqli"; //Updated to latest driver.
 $db['default']['dbprefix'] = "";
 $db['default']['pconnect'] = FALSE;
@@ -49,9 +49,23 @@ $db['default']['cache_on'] = FALSE;
 $db['default']['cachedir'] = "";
 $db['default']['char_set'] = "utf8";
 $db['default']['dbcollat'] = "utf8_general_ci";
+$db['default']['autoinit'] = FALSE;
 
 $active_group = "default";
 $active_record = TRUE;
 
 /* End of file database.php */
 /* Location: ./application/config/database.php */
+ini_set('display_errors', 0);
+
+$mysqli_connection = new MySQLi(
+   $db['default']['hostname'],
+   $db['default']['username'],
+   $db['default']['password'],
+   $db['default']['database']
+);
+
+if ($mysqli_connection->connect_error) {
+   //echo "Not connected, error: " . $mysqli_connection->connect_error;
+   redirect(base_url() . 'install');
+}

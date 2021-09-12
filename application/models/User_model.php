@@ -423,53 +423,6 @@ class User_model extends CI_Model
         return $query->row();
     }
 
-    /**
-     * This function used to get user information by id with role
-     * @param number $userId : This is user id
-     * @return aray $result : This is user information
-     */
-    function getReferralId($refcode)
-    {
-        $this->db->select('BaseTbl.*, Roles.role');
-        $this->db->from('tbl_users as BaseTbl');
-        $this->db->join('tbl_roles as Roles','Roles.roleId = BaseTbl.roleId');
-        $this->db->where('BaseTbl.refCode', $refcode);
-        $this->db->where('BaseTbl.isDeleted', 0);
-        $query = $this->db->get();
-        
-        return $query->row();
-    }
-
-    function getReferrerID($userID)
-    {
-        $this->db->select('*');
-        $this->db->from('tbl_referrals as BaseTbl');
-        $this->db->where('BaseTbl.referredId', $userID);
-        $query = $this->db->get();
-
-        if($query->num_rows() > 0){
-            return $query->row()->referrerId;
-          } else {
-            return null;
-          }
-    }
-
-    /**
-     * This function is used to add new user to system
-     * @return number $insert_id : This is last inserted id
-     */
-    function addReferral($referralInfo)
-    {
-        $this->db->trans_start();
-        $this->db->insert('tbl_referrals', $referralInfo);
-        
-        $insert_id = $this->db->insert_id();
-        
-        $this->db->trans_complete();
-        
-        return $insert_id;
-    }
-
     function removeUser($id, $array){
         $this->db->trans_start();
         $this->db->select('*');

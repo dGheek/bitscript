@@ -149,30 +149,4 @@ class Web_model extends CI_Model
 
         return $query->row();
     }
-
-  /*   function displayDeposit()
-    {
-        $this->db->select('*');
-        $this->db->from('tbl_deposits');
-        $this->db->order_by('id', 'DESC');
-
-        $query = $this->db->get();
-        
-        $result = $query->result();  
-
-        return $result;
-    }
-
-    function displayWithdrawal()
-    {
-        $this->db->select('*');
-        $this->db->from('tbl_withdrawals');
-        $this->db->order_by('id', 'DESC');
-
-        $query = $this->db->get();
-        
-        $result = $query->result();  
-
-        return $result;
-    } */
 }

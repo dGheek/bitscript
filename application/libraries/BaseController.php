@@ -3,10 +3,11 @@
 /**
  * Class : BaseController
  * Base Class to control over all the classes
- * @author : Kishor Mali
- * @version : 1.1
- * @since : 15 November 2016
+ * @author : Axis96
+ * @version : 3.2
+ * @since : 18 February 2021
  */
+
 class BaseController extends CI_Controller {
 	protected $role = '';
 	protected $vendorId = '';
@@ -16,16 +17,59 @@ class BaseController extends CI_Controller {
 	protected $global = array ();
 	protected $lastLogin = '';
 
-	/**
-     * This is default constructor of the class
-     */
     public function __construct()
     {
-        parent::__construct();
+		parent::__construct();
+        
+        //Load libaries
+		$this->load->library('session');
+
+        //Load all model classes
+        $this->load->model('addons_model');
+        $this->load->model('btcpay_model');
+        $this->load->model('coinbase_model');
+        $this->load->model('email_model');
+        $this->load->model('languages_model');
+        $this->load->model('login_model');
+        $this->load->model('payeer_model');
+        $this->load->model('payments_model');
+        $this->load->model('paystack_model');
+        $this->load->model('perfectmoney_model');
+        $this->load->model('plans_model');
+		$this->load->model('referrals_model');
 		$this->load->model('settings_model');
-		$this->load->model('languages_model');
-		$this->load->model('addons_model');
+		$this->load->model('ticket_model');
+        $this->load->model('transactions_model');
+        $this->load->model('twilio_model');
+        $this->load->model('user_model');
+		$this->load->model('verification_model');
+        $this->load->model('web_model');
+        
 		$this->SiteData();
+
+		$timezone = $this->settings_model->getSettingsInfo()['timezone'];
+		$tz = !$timezone ? 'UTC' : $timezone;
+		date_default_timezone_set($tz);
+
+		$companyInfo = $this->settings_model->getSettingsInfo();
+        $userLang = $this->session->userdata('site_lang') == '' ?  $companyInfo['default_language'] : $this->session->userdata('site_lang');
+
+		$this->load->helper('language');
+		$this->lang->load('common',$userLang);
+		$this->lang->load('login',$userLang);
+		$this->lang->load('registration',$userLang);
+        $this->lang->load('dashboard',$userLang);
+        $this->lang->load('transactions',$userLang);
+        $this->lang->load('users',$userLang);
+        $this->lang->load('plans',$userLang);
+        $this->lang->load('email_templates',$userLang);
+        $this->lang->load('settings',$userLang);
+        $this->lang->load('payment_methods',$userLang);
+		$this->lang->load('languages',$userLang);
+		$this->lang->load('validation',$userLang);
+        $this->lang->load('tickets',$userLang);
+        $this->lang->load('kyc',$userLang);
+		$this->lang->load('web_control',$userLang);
     }
 	
 	/**
@@ -59,55 +103,80 @@ class BaseController extends CI_Controller {
 	 */
 	public function SiteData()
 	{
-		$this->companyName = $this->settings_model->getsettingsInfo()['name'];
+		$companyInfo = $this->settings_model->getSettingsInfo();
+		$this->companyName = $companyInfo['name'];
 		//Logos
-		if(!empty($this->settings_model->getSettingsInfo()['whiteLogo']))
+		if(!empty($companyInfo['whiteLogo']))
 		{
-			$this->logoWhite = base_url().'uploads/'.$this->settings_model->getSettingsInfo()['whiteLogo'];
+			$this->logoWhite = base_url().'uploads/'.$companyInfo['whiteLogo'];
 		}
 		else
 		{
 			$this->logoWhite = base_url().'assets/dist/img/logo-white.png';
 		}
-		if(!empty($this->settings_model->getSettingsInfo()['darkLogo']))
+		if(!empty($companyInfo['darkLogo']))
 		{
-			$this->logoDark = base_url().'uploads/'.$this->settings_model->getSettingsInfo()['darkLogo'];
+			$this->logoDark = base_url().'uploads/'.$companyInfo['darkLogo'];
 		}
 		else
 		{
 			$this->logoDark = base_url().'assets/dist/img/logo.png';
 		}
-		if(!empty($this->settings_model->getSettingsInfo()['favicon']))
+		if(!empty($companyInfo['favicon']))
 		{
-			$this->favicon = base_url().'uploads/'.$this->settings_model->getSettingsInfo()['favicon'];
+			$this->favicon = base_url().'uploads/'.$companyInfo['favicon'];
 		}
 		else
 		{
 			$this->favicon = base_url().'assets/dist/img/favicon.png';
 		}
-		$language = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
+		$language = $this->session->userdata('site_lang') == '' ?  $companyInfo['default_language'] : $this->session->userdata('site_lang');
 		$langLogo = $this->languages_model->getLangByName($language);
 		$languages = $this->languages_model->all_Languages(0);
 		$this->site_lang = $langLogo;
 		$this->site_languages = $languages;
-		$this->siteTitle = $this->settings_model->getSettingsInfo()['title'];
-		$this->siteDescription = $this->settings_model->getSettingsInfo()['description'];
-		$this->siteKeywords = $this->settings_model->getSettingsInfo()['keywords'];
-		$this->chatWidget = $this->settings_model->getSettingsInfo()['chatWidget'];
-		$this->currency = $this->settings_model->getSettingsInfo()['currency'];
-		$this->chatPluginActive = $this->settings_model->getSettingsInfo()['chat_plugin_active'];
-		$this->chatPlugin = $this->settings_model->getSettingsInfo()['chat_plugin'];
+		$this->siteTitle = $companyInfo['title'];
+		$this->siteDescription = $companyInfo['description'];
+		$this->siteKeywords = $companyInfo['keywords'];
+		$this->chatWidget = $companyInfo['chatWidget'];
+		$this->currency = $companyInfo['currency'];
+		$this->chatPluginActive = $companyInfo['chat_plugin_active'];
+		$this->chatPlugin = $companyInfo['chat_plugin'];
 		$this->tawkpropertyid = $this->addons_model->get_addon_info('Tawk.To')->public_key;
 	}
+
+	/**
+	 * Checks if ProInvest is running the demo environment
+	 */
+	function isDemo() {
+		if(base_url() == 'https://proinvest.axis96.co/'){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Checks if request is GET or POST
+	 */
+	function isGet(){
+        if ($this->input->server('REQUEST_METHOD') === 'GET') {
+            //its a get
+            return true;
+         } elseif ($this->input->server('REQUEST_METHOD') === 'POST') {
+            //its a post
+            return false;
+         }
+    }
 	
 	/**
 	 * This function used to check the user is logged in or not
 	 */
 	function isLoggedIn() {
-		$isLoggedIn = $this->session->userdata ( 'isLoggedIn' );
+		$isLoggedIn = $this->session->userdata('isLoggedIn');
 		
 		if (! isset ( $isLoggedIn ) || $isLoggedIn != TRUE) {
-			redirect ( 'login' );
+			redirect ('login');
 		} else {
 			$this->role = $this->session->userdata ( 'role' );
 			$this->vendorId = $this->session->userdata ( 'userId' );
@@ -115,7 +184,7 @@ class BaseController extends CI_Controller {
 			$this->lastName = $this->session->userdata ( 'lastName' );
 			$this->roleText = $this->session->userdata ( 'roleText' );
 			$this->lastLogin = $this->session->userdata ( 'lastLogin' );
-			$this->userLang = $this->languages_model->getLangByName($this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang'));
+			$this->userLang = $this->languages_model->getLangByName($this->session->userdata('site_lang') == '' ?  $this->settings_model->getSettingsInfo()['default_language'] : $this->session->userdata('site_lang'));
 			$this->languages = $this->languages_model->all_Languages(0);
 			$this->companyInfo = $this->settings_model->getSettingsInfo();
 			if(!empty($this->session->userdata ( 'ppic' )))
@@ -138,6 +207,9 @@ class BaseController extends CI_Controller {
 			$this->global ['userLang'] = $this->userLang;
 			$this->global ['languages'] = $this->languages;
 			$this->global ['companyInfo'] = $this->companyInfo;
+			$this->global ['ticketnotify'] = $this->ticket_model->pendingtickets();
+			$this->global ['kycnotify'] = $this->verification_model->pendingkyc();
+			$this->global ['isDemo'] = $this->isDemo();
 		}
 	}
 	
@@ -188,6 +260,108 @@ class BaseController extends CI_Controller {
 		redirect ( 'login' );
 	}
 
+	function kycIsActive(){
+		//First check if KYC has been activated
+		$companyInfo = $this->settings_model->getSettingsInfo();
+		$kyc_status = $companyInfo['kyc_status'];
+
+		if($kyc_status == 0){
+			//Not activated
+			return false;
+		} else {
+			// Activated
+			return true;
+		}
+	}
+
+	function isVerified(){
+		//Check if KYC is on or off
+		$kyc_status = $this->kycIsActive();
+
+		if($this->role != ROLE_CLIENT) {
+			//Admin level access does not need to be bothered by KYC verification
+			$this->global ['isVerified'] = 'Verified';
+			return true;
+		} else {
+			if($kyc_status == false){
+				//The user can access all components since KYC has not been turned on
+				$this->global ['isVerified'] = 'Verified';
+				return true;
+			} else {
+				//Run a check to see if the user has been verified
+				$isVerified = $this->verification_model->isVerified($this->vendorId);
+
+				if($isVerified == false){
+					//No record exists
+					$this->global ['isVerified'] = 'Verify Your Account';
+					return false;
+				} else {
+					//Check the status of the current application
+					$status = $isVerified->overall_status;
+
+					if($status == 0){
+						//Approved
+						$this->global ['isVerified'] = 'Pending Verification';
+						return false;
+					} else if($status == 1) {
+						//Not approved yet
+						$this->global ['isVerified'] = 'Verified';
+						return true;
+					} else if($status == 2) {
+						//Not approved yet
+						$this->global ['isVerified'] = 'Pending Resubmission';
+						return false;
+					} else if($status == 3) {
+						//Not approved yet
+						$this->global ['isVerified'] = 'Pending Verification';
+						return false;
+					} else if($status == 4) {
+						//Not approved yet
+						$this->global ['isVerified'] = 'Rejected';
+						return false;
+					}
+				}
+			}
+		}
+	}
+
+	//http://stackoverflow.com/questions/1727077/generating-a-drop-down-list-of-timezones-with-php
+	function _get_timezones()
+	{
+		$timezones = DateTimeZone::listIdentifiers();
+		$timezone_offsets = array();
+		
+		foreach($timezones as $timezone)
+		{
+		    $tz = new DateTimeZone($timezone);
+		    $timezone_offsets[$timezone] = $tz->getOffset(new DateTime);
+		}
+
+		// sort timezone by offset
+		asort($timezone_offsets);
+
+		$timezone_list = array();
+		foreach($timezone_offsets as $timezone => $offset)
+		{
+		    $offset_prefix = $offset < 0 ? '-' : '+';
+		    $offset_formatted = gmdate('H:i', abs($offset) );
+		    $pretty_offset = "UTC${offset_prefix}${offset_formatted}";
+			
+
+			$current_time = '';
+			$date = new DateTime();
+			$date->setTimezone(new DateTimeZone($timezone));
+			if (method_exists($date, 'setTimestamp'))
+			{
+				$date->setTimestamp(time());
+				$current_time = $date->format('h:i a');
+			}
+			$timezone_list[$timezone] = "(${pretty_offset}) $timezone $current_time";
+		}
+
+		return $timezone_list;
+	}
+
 	/**
      * This function used to load views
      * @param {string} $viewName : This is view name
@@ -197,10 +371,12 @@ class BaseController extends CI_Controller {
      * @return {null} $result : null
      */
     function loadViews($viewName = "", $headerInfo = NULL, $pageInfo = NULL, $footerInfo = NULL){
-
-        $this->load->view('/partials/header', $headerInfo);
-        $this->load->view('/'.$viewName, $pageInfo);
-        $this->load->view('/partials/footer', $footerInfo);
+		$companyInfo = $this->settings_model->getsettingsInfo();
+		$isLoggedIn = $this->session->userdata('isLoggedIn');
+		
+        $this->load->view('backend/partials/header', $headerInfo);
+        $this->load->view('backend/'.$viewName, $pageInfo);
+        $this->load->view('backend/partials/footer', $footerInfo);
 	}
 
 	function sendEmail($recipient, $subject, $content){
@@ -300,5 +476,73 @@ class BaseController extends CI_Controller {
 				"page" => $page,
 				"segment" => $segment
 		);
+	}
+
+
+	/**
+	 * Callback Functions
+	 */
+
+	public function _recaptcha($str)
+    {
+        $companyInfo = $this->settings_model->getsettingsInfo();
+        $recaptchaInfo = $this->addons_model->get_addon_info('Google Recaptcha');
+        $recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify';
+        $recaptcha_secret = $recaptchaInfo->secret_key;
+        $recaptcha_response = $str;
+
+        if($companyInfo['recaptcha_version'] == 'v2'){
+            $ip=$_SERVER['REMOTE_ADDR'];
+            $url=$recaptcha_url."?secret=".$recaptcha_secret."&response=".$recaptcha_response."&remoteip=".$ip;
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+            curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.16) Gecko/20110319 Firefox/3.6.16");
+            $res = curl_exec($curl);
+            curl_close($curl);
+            $res= json_decode($res, true);
+            //reCaptcha success check
+            if($res['success'])
+            {
+                return TRUE;
+            }
+            else
+            {
+                $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
+                return FALSE;
+            }
+        } else if($companyInfo['recaptcha_version'] == 'v3'){
+            // Make and decode POST request:
+            $recaptcha = file_get_contents($recaptcha_url . '?secret=' . $recaptcha_secret . '&response=' . $recaptcha_response);
+            $res = json_decode($recaptcha);
+            
+            //print_r($res);
+            if($res->success == 1)
+            {
+                // Take action based on the score returned:
+                if ($res->score >= 0.5) {
+                    return TRUE;
+                } else {
+                    $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
+                    return FALSE;
+                }
+            } else {
+                $this->form_validation->set_message('_recaptcha', lang('recaptcha_error_please_refresh_page_and_try_again'));
+                return FALSE;
+            }
+        }
+    }
+
+	//Check if select field has a value or not
+	function _check_default_select($post_string)
+	{
+		if($post_string == '0'){
+			$this->form_validation->set_message('_check_default_select', lang('this_field_is_required'));
+			return FALSE;
+		}
+		else {
+			return TRUE;
+		}
 	}
 }

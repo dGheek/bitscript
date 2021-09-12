@@ -3,12 +3,13 @@
 require APPPATH . '/libraries/BaseController.php';
 
 /**
- * Class : Referrals (ReferralsController)
+ * Class : Referrals (Referrals Controller)
  * Referrals Class
  * @author : Axis96
- * @version : 1.0
- * @since : 07 December 2019
+ * @version : 3.2
+ * @since : 25 February 2020
  */
+
 class Referrals extends BaseController
 {
     /**
@@ -17,30 +18,58 @@ class Referrals extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('user_model');
-        $this->load->model('transactions_model');
-        $this->load->model('settings_model');
-        $this->load->model('email_model');
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
         $this->isLoggedIn();  
-        
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
+        $this->isVerified();   
     }
+
+    public function referrals(){
+        if($this->role == ROLE_CLIENT)
+        { 
+            $searchText = $this->input->post('searchText' ,TRUE);
+            $data['searchText'] = $searchText;
+            
+            $this->load->library('pagination');
+            
+            $count = $this->referrals_model->referralsListingCount($this->vendorId, $searchText);
+            $returns = $this->paginationCompress ( "referrals/", $count, 10 ); 
+
+            $data['referrals'] = $this->referrals_model->referrals($this->vendorId, $searchText, $returns["page"], $returns["segment"]);
+            $data['total_referrals'] = $this->referrals_model->referralsListingCount($this->vendorId, $searchText);
+            $data['referrals_this_week'] = $this->referrals_model->total_referrals_per_period($this->vendorId, date("Y-m-d H:i:s", strtotime('monday this week')), date("Y-m-d", strtotime('sunday this week')));
+
+            $this->global['pageTitle'] = 'My Referrals';
+            $this->global['displayBreadcrumbs'] = false;
+            $this->loadViews("referrals/table", $this->global, $data, NULL);
+        } else {
+            $this->loadThis();
+        }
+    }
+
+    function adminreferrals($id = NULL){
+        if($this->role == ROLE_CLIENT)
+        { 
+            $this->loadThis();
+        } else {
+            $userId = ($id == NULL ? 0 : $id);
+
+            $searchText = $this->input->post('searchText' ,TRUE);
+            $data['searchText'] = $searchText;
+            
+            $this->load->library('pagination');
+            
+            $count = $this->referrals_model->referralsListingCount($userId, $searchText);
+            $returns = $this->paginationCompress ( "referrals/".$userId."/", $count, 10, 3 ); 
+
+            $data['referrals'] = $this->referrals_model->referrals($userId, $searchText, $returns["page"], $returns["segment"]);
+            $data['total_referrals'] = $this->referrals_model->referralsListingCount($userId, $searchText);
+            $data['referrals_this_week'] = $this->referrals_model->total_referrals_per_period($userId, date("Y-m-d H:i:s", strtotime('monday this week')), date("Y-m-d", strtotime('sunday this week')));
+            
+            $this->global['pageTitle'] = 'My Referrals';
+            $this->global['displayBreadcrumbs'] = false;
+            $this->loadViews("referrals/table", $this->global, $data, NULL);
+        }
+    }
+
     /**
      * This function used to send an invite link to new users
      */

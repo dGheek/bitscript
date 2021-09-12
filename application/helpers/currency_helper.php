@@ -26,11 +26,11 @@ function to_currency_format($number, $decimals,$currency_symbol,$symbol_location
    {
 		if ($symbol_location == 'after')
 	   	{
-			$ret = '<span style="white-space:nowrap;">-</span>'.number_format(abs($number), $decimals, $decimal_point, $thousands_separator).' '.$currency_symbol;
+			$ret = '-'.number_format(abs($number), $decimals, $decimal_point, $thousands_separator).' '.$currency_symbol;
 		}
 		else
 		{
-			$ret = '<span style="white-space:nowrap;">-</span>'.$currency_symbol.' '.number_format(abs($number), $decimals, $decimal_point, $thousands_separator);
+			$ret = '-'.$currency_symbol.' '.number_format(abs($number), $decimals, $decimal_point, $thousands_separator);
 		}
    }
 
@@ -66,5 +66,16 @@ function to_currency($number, $decimals = 2, $show_not_set = TRUE)
 	}
 	
 	return to_currency_format($number, $decimals,$currency_symbol,$symbol_location,$number_of_decimals,$thousands_separator,$decimal_point);	
+}
+
+function obfuscate_email($email)
+{
+    $mail_parts = explode("@", $email);
+    $length = strlen($mail_parts[0]);
+    $show = floor($length/2);
+    $hide = $length - $show;
+    $replace = str_repeat("*", $hide);
+
+    return substr_replace ( $mail_parts[0] , $replace , $show, $hide ) . "@" . substr_replace($mail_parts[1], "**", 0, 2);  
 }
 ?>

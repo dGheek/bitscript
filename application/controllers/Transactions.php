@@ -17,32 +17,8 @@ class Transactions extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('user_model');
-        $this->load->model('plans_model');
-        $this->load->model('login_model');
-        $this->load->model('transactions_model');
-        $this->load->model('settings_model');
-        $this->load->model('email_model');
-        $this->load->model('payments_model');
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
-        $this->isLoggedIn();   
-
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
+        $this->isLoggedIn();  
+        $this->isVerified();   
     }
 
     /**
@@ -260,6 +236,7 @@ class Transactions extends BaseController
                                     'userId'=>$this->vendorId, 
                                     'txnCode'=>'WT'.random_string('alnum',8),
                                     'amount'=>$amount, 
+                                    'amount_less_transaction_fee'=>$amount, 
                                     'withdrawal_method'=>'Wallet',
                                     'withdrawal_Account'=>'Wallet',
                                     'bank_name'=>'NA',
@@ -300,7 +277,7 @@ class Transactions extends BaseController
                                     $endDate = date('Y-m-d H:i:s', strtotime($date."+$maturityPeriod hours"));
                                     $businessDays = $planData->businessDays;
                                 
-                                    $result = $this->transactions_model->addNewDeposit($this->vendorId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays);
+                                    $result = $this->transactions_model->addNewDeposit($this->vendorId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays, $planData->principalReturn);
                                     $this->session->set_flashdata('success', lang('your_funds_have_been_deposited_successfully'));
                                     redirect('/deposits/new');
                                 }
@@ -402,15 +379,35 @@ class Transactions extends BaseController
                         } else if($paymentMethodAPI == 'Perfect Money'){
                             $this->load->library('PerfectMoney');
                             $cc_amount = $companyInfo['currency'] == 'USD' ? $amount : $amount/$companyInfo['currency_exchange_rate'];
-                            $config = array(
-                                'payee_account'  => 'U24976189',
-                                'payee_name'  => 'ProInvest',
-                                'payment_id'  => $code,
-                                'payment_amount' => $cc_amount,
-                                'payment_units'  => 'USD'
+                            $methodData = $this->payments_model->getInfo('tbl_addons_api', 'Perfect Money');
+
+                            $info = array(
+                                'userId' => $this->vendorId,
+                                'planId' => $plan,
+                                'payee_account' => $methodData->merchantID,
+                                'payee_name' => $methodData->secret_key,
+                                'payment_id' => $code,
+                                'amount' => $amount,
+                                'currency' => $companyInfo['currency'],
+                                'status' => 0
                             );
-                            $perfectmoney = new PerfectMoney($config);
-                            $perfectmoney->submitForm();
+
+                            $res = $this->perfectmoney_model->create($info);
+
+                            if($res > 0){
+                                $config = array(
+                                    'payee_account'  => $methodData->merchantID,
+                                    'payee_name'  => $methodData->secret_key,
+                                    'payment_id'  => $code,
+                                    'payment_amount' => $cc_amount,
+                                    'payment_units'  => 'USD',
+                                    'status_url' => base_url('pm/ipn'),
+                                    'payment_url' => base_url('pm/success'),
+                                    'no_payment_url' => base_url('pm/cancelled'),
+                                );
+                                $perfectmoney = new PerfectMoney($config);
+                                $perfectmoney->submitForm();
+                            }
                         } else if($paymentMethodAPI == 'CoinPayments'){
                             $coin = $method_data->ref;
 
@@ -467,6 +464,46 @@ class Transactions extends BaseController
                             // 'item' will be erased after 300 seconds
                             $this->session->mark_as_temp(array('DepositAmount', 'planId'), 300);
                             redirect('/paystack');
+                        } else if($paymentMethodAPI == 'Coinbase Commerce'){
+                            $this->load->library('coinbaselib');
+
+                            $methodData = $this->payments_model->getInfo('tbl_addons_api', 'coinbase commerce');
+
+                            $config = array(
+                                'api_key'  => $methodData->public_key,
+                                'name' => 'Deposit Transaction',
+                                'description' => 'ID: '.$code,
+                                'amount' => $amount,
+                                'currency' => $companyInfo['currency'],
+                                'customer_id'=> $this->vendorId,
+                                'customer_name'=> $this->firstName.' '.$this->lastName,
+                                'redirect_url'=>base_url('coinbase/success'),
+                                'cancel_url'=>base_url('coinbase/cancelled')
+                            );
+
+                            $coinbase = new Coinbaselib($config);
+
+                            $result = $coinbase->charge();
+
+                            if($result['url'] == ''){
+                                $this->session->set_flashdata('error', 'There is a problem in processing your transaction. Please try again.');
+                            } else {
+                                $deposit_array = array(
+                                    'userid'=>$this->vendorId,
+                                    'invoice'=>$code,
+                                    'planId'=>$plan,
+                                    'txn_id'=>$result["id"],
+                                    'amount'=>$amount,
+                                    'currency'=>$companyInfo['currency'],
+                                    'status'=>'0',
+                                    'createdDtm'=>date('Y-m-d H:i:s')
+    
+                                );
+    
+                                $this->coinbase_model->addCoinbase($deposit_array);
+    
+                                redirect($result["url"]);
+                            }
                         }
                     }
                 }
@@ -558,7 +595,7 @@ class Transactions extends BaseController
                             $endDate = date('Y-m-d H:i:s', strtotime($date."+$maturityPeriod hours"));
                             $businessDays = $plan->businessDays;
                                 
-                            $result = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays);
+                            $result = $this->transactions_model->addNewDeposit($userId, $depositInfo, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays, $plan->principalReturn);
                   
                             //Send email
                             if($result > 0){
@@ -620,7 +657,6 @@ class Transactions extends BaseController
                                 $this->session->set_flashdata('error', 'Error in depositing the funds');
                                 redirect('deposits/new');
                             }
-
                         }
                     } 
                     else 
@@ -708,16 +744,21 @@ class Transactions extends BaseController
         $csrfHash = $this->security->get_csrf_hash();
 
         $this->load->helper('string');
-        $this->load->library('form_validation');
-            
-        $this->form_validation->set_rules('img','Bank Slip','callback_validate_image');
 
-        if($this->form_validation->run() == FALSE)
+        $config['upload_path']          = './uploads/';
+        $config['allowed_types']        = 'pdf|jpg|png';
+        $config['max_size']             = 1024;
+        $config['max_width']            = 0;
+        $config['max_height']           = 0;
+
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload('img'))
         {
             //Failed
             $res = array(
                 'success' => false,
-                'msg' => 'Please upload a valid bank slip either as PDF, JPG or PNG',
+                'msg' => 'Please upload either as PDF, JPG or PNG and with a max size of 1MB.',
                 "csrfTokenName" => $csrfTokenName,
                 "csrfHash" => $csrfHash
             );
@@ -760,12 +801,41 @@ class Transactions extends BaseController
                 if($result > 0){
                     //redirect('/deposits');
                     //$this->session->set_flashdata('success', lang('deposit_successful'));
+                    //Send Mail
+                    $conditionUserMail = array('tbl_email_templates.type'=>'Deposit Notification');
+                    $resultEmail = $this->email_model->getEmailSettings($conditionUserMail);
+
+                    $companyInfo = $this->settings_model->getSettingsInfo();
+                
+                    if($resultEmail->num_rows() > 0)
+                    {
+                        $rowUserMailContent = $resultEmail->row();
+                        $splVars = array(
+                            "!depositAmount" => to_currency($amount),
+                            "!companyName" => $companyInfo['name'],
+                            "!address" => $companyInfo['address'],
+                            "!siteurl" => base_url()
+                        );
+
+                        $mailSubject = strtr($rowUserMailContent->mail_subject, $splVars);
+                        $mailContent = strtr($rowUserMailContent->mail_body, $splVars); 	
+
+                        $toEmail = $companyInfo['email'];
+                        $fromEmail = $companyInfo['SMTPUser'];
+
+                        $name = 'Support';
+
+                        $header = "From: ". $name . " <" . $fromEmail . ">\r\n"; //optional headerfields
+
+                        $send = $this->sendEmail($toEmail,$mailSubject,$mailContent);
+                    }
 
                     unset(
                         $_SESSION['DepositAmount'],
                         $_SESSION['planId'],
                         $_SESSION['id']
                     );
+
                     //Success
                     $res = array(
                         'success' => true,
@@ -851,6 +921,34 @@ class Transactions extends BaseController
                 if($result > 0){
                     //redirect('/deposits');
                     //$this->session->set_flashdata('success', lang('deposit_successful'));
+                    $conditionUserMail = array('tbl_email_templates.type'=>'Deposit Notification');
+                    $resultEmail = $this->email_model->getEmailSettings($conditionUserMail);
+
+                    $companyInfo = $this->settings_model->getSettingsInfo();
+                
+                    if($resultEmail->num_rows() > 0)
+                    {
+                        $rowUserMailContent = $resultEmail->row();
+                        $splVars = array(
+                            "!depositAmount" => to_currency($amount),
+                            "!companyName" => $companyInfo['name'],
+                            "!address" => $companyInfo['address'],
+                            "!siteurl" => base_url()
+                        );
+
+                        $mailSubject = strtr($rowUserMailContent->mail_subject, $splVars);
+                        $mailContent = strtr($rowUserMailContent->mail_body, $splVars); 	
+
+                        $toEmail = $companyInfo['email'];
+                        $fromEmail = $companyInfo['SMTPUser'];
+
+                        $name = 'Support';
+
+                        $header = "From: ". $name . " <" . $fromEmail . ">\r\n"; //optional headerfields
+
+                        $send = $this->sendEmail($toEmail,$mailSubject,$mailContent);
+                    }
+
                     //unset session data
                     unset(
                         $_SESSION['DepositAmount'],
@@ -976,10 +1074,10 @@ class Transactions extends BaseController
                         
                     if ($result > 0) 
                     {
+                        //Process the referal credits
+                        $this->referralEarnings($emailCheck->userId, $dAmount, $depositID);
+                        
                         if($depositInfo1->status == 4){
-                            //Process the referal credits
-                            $this->referralEarnings($emailCheck->userId, $dAmount, $depositID);
-
                             $this->session->set_flashdata('success', 'Deposit Approved Successfully');
                         } else {
                             $this->session->set_flashdata('success', lang('deposit_edited_successfully'));
@@ -1114,7 +1212,7 @@ class Transactions extends BaseController
                             $endDate = date('Y-m-d H:i:s', strtotime($date."+$maturityPeriod hours"));
                             $businessDays = $plan->businessDays;
 
-                            $result1 = $this->transactions_model->addNewDeposit($userId, $depositInfo1, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays);
+                            $result1 = $this->transactions_model->addNewDeposit($userId, $depositInfo1, $earningsAmount, $startDate, $endDate, $payoutsInterval, $maturityPeriod, $businessDays, $plan->principalReturn);
 
                             if($result1>0){                            
                                 //Send Mail
@@ -1367,112 +1465,245 @@ class Transactions extends BaseController
 
     function referralEarnings($userID = NULL, $amount = NULL, $depositID = NULL)
     {
-        if($userID == Null || $amount == Null || $depositID == Null)
-        {
+        //Run a check to confirm if referral earningsa has been activated
+        $refactive = $this->settings_model->getSettingsInfo()['refactive'];
+
+        if($refactive == 1){ //Earnings has been disabled
             return false;
-            //print_r('Either the user Id, amount or depositid is not available');
-        }
-        else 
-        {
-            //Get the referrer ID
-            $referrerID = $this->user_model->getReferrerID($userID);
-
-            //First Let's check whether this user has been referred by anyone
-            if($referrerID != null) {
-                //Check the referral method & interest
-                $refMethod = $this->settings_model->getSettingsInfo()['refType'];
-                $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
-                $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
-
-                if($refMethod == 'simple')
-                {   
-                    $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
-
-                    //Calculate the referrer's earnings
-                    $earnings = $amount * ($refInterest/100);
-
-                    //for generating the txn code
-                    $this->load->helper('string');
-
-                    //Insert earnings into the earnings table
-                    $array = array(
-                        'type' => 'referral',
-                        'userId'=> $referrerID,
-                        'depositId' => $depositID,
-                        'txnCode' => 'PO'.random_string('alnum',8),
-                        'amount' => $earnings,
-                        'createdDtm'=> date("Y-m-d H:i:s")
-                    );
-                    if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
-                        $result = $this->transactions_model->addNewEarning($array);
-                    } else if($deposit_only_payouts == 0) {
-                        $result = $this->transactions_model->addNewEarning($array);
-                    } else {
-                        $result = 0;
-                    }
-
-                    if($result > 0)
-                    {
-                        return true;
-                        //print_r('New simple earning added');
-                    } else 
+        } else {
+            //Check frequency of earnings
+            /**
+             * 1 - Only once
+             * 0 - All deposits
+             */
+            $reffreq = $this->settings_model->getSettingsInfo()['reffrequency']; 
+            if($reffreq == 1){
+                //Run a check to confirm if the user has more than 1 deposit
+                $numberofdeposits = $this->transactions_model->depositsListingCount(NULL, $userID);
+                if($numberofdeposits > 1){
+                    return false;
+                } else {
+                    if($userID == Null || $amount == Null || $depositID == Null)
                     {
                         return false;
-                        //print_r('New simple earning not added');
+                        //print_r('Either the user Id, amount or depositid is not available');
                     }
-                } else if($refMethod == 'multiple')
-                {
-                    //Find the referral levels
-                    $levels_array = explode(',', $refInterest);
-                    $levelsCount = count($levels_array);
-
-                    //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
-                    for ($i=0; $i<$levelsCount; $i++) {
-                        // Here we get the first referredID whose making the deposit
-                        $referrerId_[0] = $userID;
-                        //We then get multiple referrerIds based on the number of levels
-                        $referrerId_[$i + 1] = $this->user_model->getReferrerID($referrerId_[$i]);
-                        //We then proceed to put it in an array with referrerId_[1] as the first Id
-                        $earningsData[] = (object) [
-                            "id" => $referrerId_[$i + 1],
-                            "interest" => $levels_array[$i],
-                            "amount" => $amount * $levels_array[$i]/100
-                        ];
-                    }
-
-                    //for generating the txn code
-                    $this->load->helper('string');
-
-                    //We then take the earnings data and remove all null Ids in the array to get the users
-                    //that we should put soe earnings for
-                    foreach($earningsData as $data) {
-                        if($data->id != null) {
-                            $array[] = array(
-                                'type' => 'referral',
-                                'userId'=> $data->id,
-                                'depositId' => $depositID,
-                                'txnCode' => 'PO'.random_string('alnum',8),
-                                'amount' => $data->amount,
-                                'createdDtm'=>date("Y-m-d H:i:s")
-                            );
-                        }
-                    };
-
-                    //Insert the data
-                    $result = $this->transactions_model->addNewEarnings($array);
-
-                    if($result > 0)
+                    else 
                     {
-                        return true;
-                    } else 
-                    {
-                        return false;
+                        //Get the referrer ID
+                        $referrerID = $this->referrals_model->getReferrerID($userID);
+        
+                        //First Let's check whether this user has been referred by anyone
+                        if($referrerID != null) {
+                            //Check the referral method & interest
+                            $refMethod = $this->settings_model->getSettingsInfo()['refType'];
+                            $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
+                            $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
+        
+                            if($refMethod == 'simple')
+                            {
+                                $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
+        
+                                //Calculate the referrer's earnings
+                                $earnings = $amount * ($refInterest/100);
+        
+                                //for generating the txn code
+                                $this->load->helper('string');
+        
+                                //Insert earnings into the earnings table
+                                $array = array(
+                                    'type' => 'referral',
+                                    'userId'=> $referrerID,
+                                    'depositId' => $depositID,
+                                    'txnCode' => 'PO'.random_string('alnum',8),
+                                    'amount' => $earnings,
+                                    'createdDtm'=> date("Y-m-d H:i:s")
+                                );
+        
+                                if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
+                                    $result = $this->transactions_model->addNewEarning($array);
+                                } else if($deposit_only_payouts == 0) {
+                                    $result = $this->transactions_model->addNewEarning($array);
+                                } else {
+                                    $result = 0;
+                                }
+        
+                                if($result > 0)
+                                {
+                                    return true;
+                                    //print_r('New simple earning added');
+                                } else 
+                                {
+                                    return false;
+                                    //print_r('New simple earning not added');
+                                }
+        
+                            } else if($refMethod == 'multiple')
+                            {
+                                //Find the referral levels
+                                $levels_array = explode(',', $refInterest);
+                                $levelsCount = count($levels_array);
+        
+                                //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
+                                for ($i=0; $i<$levelsCount; $i++) {
+                                    // Here we get the first referredID whose making the deposit
+                                    $referrerId_[0] = $userID;
+                                    //We then get multiple referrerIds based on the number of levels
+                                    $referrerId_[$i + 1] = $this->referrals_model->getReferrerID($referrerId_[$i]);
+                                    //We then procced to put it in an array with referrerId_[1] as the first Id
+                                    $earningsData[] = (object) [
+                                        "id" => $referrerId_[$i + 1],
+                                        "interest" => $levels_array[$i],
+                                        "amount" => $amount * $levels_array[$i]/100
+                                    ];
+                                }
+        
+                                //for generating the txn code
+                                $this->load->helper('string');
+        
+                                //We then take the earnings data and remove all null Ids in the array to get the users
+                                //that we should put soe earnings for
+                                foreach($earningsData as $data) {
+                                    if($data->id != null) {
+                                        $array[] = array(
+                                            'type' => 'referral',
+                                            'userId'=> $data->id,
+                                            'depositId' => $depositID,
+                                            'txnCode' => 'PO'.random_string('alnum',8),
+                                            'amount' => $data->amount,
+                                            'createdDtm'=>date("Y-m-d H:i:s")
+                                        );
+                                    }
+                                };
+        
+                                //Insert the data
+                                $result = $this->transactions_model->addNewEarnings($array);
+        
+                                if($result > 0)
+                                {
+                                    return true;
+                                } else 
+                                {
+                                    return false;
+                                }
+                            }
+                        } else 
+                        {
+                            return false;
+                        }   
                     }
                 }
-            } else 
-            {
-                return false;
-            }   
+            } else {
+                if($userID == Null || $amount == Null || $depositID == Null)
+                {
+                    return false;
+                    //print_r('Either the user Id, amount or depositid is not available');
+                }
+                else 
+                {
+                    //Get the referrer ID
+                    $referrerID = $this->referrals_model->getReferrerID($userID);
+
+                    //First Let's check whether this user has been referred by anyone
+                    if($referrerID != null) {
+                        //Check the referral method & interest
+                        $refMethod = $this->settings_model->getSettingsInfo()['refType'];
+                        $refInterest = $this->settings_model->getSettingsInfo(1)['refInterest'];
+                        $deposit_only_payouts = $this->settings_model->getSettingsInfo(1)['disableRefPayouts'];
+
+                        if($refMethod == 'simple')
+                        {
+                            $number_of_deposits = $this->transactions_model->depositsListingCount('', $referrerID);
+
+                            //Calculate the referrer's earnings
+                            $earnings = $amount * ($refInterest/100);
+
+                            //for generating the txn code
+                            $this->load->helper('string');
+
+                            //Insert earnings into the earnings table
+                            $array = array(
+                                'type' => 'referral',
+                                'userId'=> $referrerID,
+                                'depositId' => $depositID,
+                                'txnCode' => 'PO'.random_string('alnum',8),
+                                'amount' => $earnings,
+                                'createdDtm'=> date("Y-m-d H:i:s")
+                            );
+
+                            if($deposit_only_payouts == 1 && $number_of_deposits > 0) {
+                                $result = $this->transactions_model->addNewEarning($array);
+                            } else if($deposit_only_payouts == 0) {
+                                $result = $this->transactions_model->addNewEarning($array);
+                            } else {
+                                $result = 0;
+                            }
+
+                            if($result > 0)
+                            {
+                                return true;
+                                //print_r('New simple earning added');
+                            } else 
+                            {
+                                return false;
+                                //print_r('New simple earning not added');
+                            }
+
+                        } else if($refMethod == 'multiple')
+                        {
+                            //Find the referral levels
+                            $levels_array = explode(',', $refInterest);
+                            $levelsCount = count($levels_array);
+
+                            //Get an array that looks like this [{id: 1, amount: 10}, {id: 2, amount: 15}]
+                            for ($i=0; $i<$levelsCount; $i++) {
+                                // Here we get the first referredID whose making the deposit
+                                $referrerId_[0] = $userID;
+                                //We then get multiple referrerIds based on the number of levels
+                                $referrerId_[$i + 1] = $this->referrals_model->getReferrerID($referrerId_[$i]);
+                                //We then procced to put it in an array with referrerId_[1] as the first Id
+                                $earningsData[] = (object) [
+                                    "id" => $referrerId_[$i + 1],
+                                    "interest" => $levels_array[$i],
+                                    "amount" => $amount * $levels_array[$i]/100
+                                ];
+                            }
+
+                            //for generating the txn code
+                            $this->load->helper('string');
+
+                            //We then take the earnings data and remove all null Ids in the array to get the users
+                            //that we should put soe earnings for
+                            foreach($earningsData as $data) {
+                                if($data->id != null) {
+                                    $array[] = array(
+                                        'type' => 'referral',
+                                        'userId'=> $data->id,
+                                        'depositId' => $depositID,
+                                        'txnCode' => 'PO'.random_string('alnum',8),
+                                        'amount' => $data->amount,
+                                        'createdDtm'=>date("Y-m-d H:i:s")
+                                    );
+                                }
+                            };
+
+                            //Insert the data
+                            $result = $this->transactions_model->addNewEarnings($array);
+
+                            if($result > 0)
+                            {
+                                return true;
+                            } else 
+                            {
+                                return false;
+                            }
+                        }
+                    } else 
+                    {
+                        return false;
+                    }   
+                }
+            }
         }
     } 
 
@@ -2148,11 +2379,16 @@ class Transactions extends BaseController
                             $account_number = NULL;
                             $swift_code = NULL;
                         }
+
+                        $transfee = $methodInfo->withdr_fixed_comm + $methodInfo->withdr_variable_comm/100 * $amount;
+                        $amount_less_fee = $amount - $transfee;
     
                         $withdrawalInfo = array(
                             'userId'=>$userId, 
                             'txnCode'=>$code,
+                            'transaction_fee'=>$transfee,
                             'amount'=>$amount, 
+                            'amount_less_transaction_fee' => $amount_less_fee,
                             'withdrawal_method'=>$withdrawal_method,
                             'withdrawal_Account'=>$withdrawal_account,
                             'bank_name'=>$bank_name,
@@ -2350,6 +2586,57 @@ class Transactions extends BaseController
         } else {
             $this->loadThis();
         }   
+    }
+
+    function transactionfee($type, $method, $amount){
+        if($this->role != ROLE_CLIENT){
+            $this->loadThis();
+        } else {
+            //Check if the method has transfer fees
+            $methodInfo = $this->payments_model->getPaymentMethodById($method);
+
+            if($type == 'withdrawal'){
+                //Check if this is the minimum amount allowed
+                $account_balance =$this->transactions_model->getAccountBalance($this->vendorId);
+                $min_withdrawal = $this->settings_model->getsettingsInfo()['min_withdrawal'];
+
+                if($amount < $min_withdrawal){
+                    $res = array(
+                        'success' => false
+                    );
+
+                    echo json_encode($res);
+                } else if($amount > $account_balance){
+                    $res = array(
+                        'success' => false
+                    );
+
+                    echo json_encode($res);
+                } else {
+                    $fixed = $methodInfo->withdr_fixed_comm;
+                    $variable = $methodInfo->withdr_variable_comm/100;
+    
+                    if($fixed > 0 || $variable > 0){
+                        $commission = $fixed + $variable*$amount;
+                        $amount_less_comm = $amount - $commission;
+    
+                        $res = array(
+                            'success' => true,
+                            'fee' => to_currency($commission),
+                            'amount_less_commission' => to_currency($amount_less_comm)
+                        );
+    
+                        echo json_encode($res);
+                    } else {
+                        $res = array(
+                            'success' => false,
+                        );
+    
+                        echo json_encode($res);
+                    }
+                }
+            };
+        }
     }
 
     function getDatesFromRange($start, $end, $payoutsInterval, $format = 'Y-m-d H:i:s') {

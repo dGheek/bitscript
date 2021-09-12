@@ -55,10 +55,13 @@ $route['404_override'] = 'home/error_404';
 $route['translate_uri_dashes'] = FALSE;
 
 /*********** WEBSITE ROUTES ************************/
+$route['home'] = "home/homepage";
 $route['faqs'] = "home/faqs";
 $route['terms'] = "home/terms";
 $route['privacy'] = "home/privacy";
+$route['contact-us'] = "home/contact";
 $route['contactus'] = "home/contact_us";
+$route['calculator'] = "home/calculator";
 
 /************* AUTH ROUTES *************/
 $route['signup'] = 'auth/signup';
@@ -89,6 +92,9 @@ $route['settings/paymentMethodUpdate'] = "settings/paymentMethodEdit";
 $route['settings/seo'] = "Settings/SEO_Update"; 
 $route['addpaymentmethod'] = "Settings/addpaymentmethod";
 $route['deletepaymentmethod/(:any)'] = "settings/deletepaymentmethod/$1";
+$route['settings/kyc'] = "Settings/kycEdit"; 
+$route['settings/purchasecode'] = 'settings/purchasecode';
+$route['settings/envatopurchasecode'] = "settings/envatopurchasecode";
 
 /*********** LANGUAGES ROUTES *******************/
 $route['change_language/(:num)'] = "Languages/change_language/$1"; 
@@ -96,13 +102,14 @@ $route['settings/languages'] = "Languages/languages";
 $route['settings/getLangSettings/(:any)/(:any)'] = "Languages/getLangSettings/$1/$2"; 
 $route['settings/addLanguage'] = "Languages/addLanguage"; 
 $route['settings/editLanguage'] = "Languages/editLanguage"; 
+$route['settings/deleteLanguage'] = "Languages/deleteLanguage"; 
 $route['settings/getLang/(:any)'] = "Languages/getLang/$1"; 
 $route['settings/editTranslation'] = "Languages/editTranslation";
 $route['switchlang/(:any)'] = 'home/switchLang/$1';
+$route['switchtemplate/(:any)'] = 'home/switchTemplate/$1';
 
 /*********** USER DEFINED ROUTES *******************/
 $route['dashboard'] = 'user';
-$route['invite'] = 'referrals/invite';
 $route['logout'] = 'user/logout';
 
 $route['addNew'] = "user/addNew";
@@ -127,8 +134,12 @@ $route['checkEmailExists'] = "user/checkEmailExists";
 $route['login-history'] = "user/loginHistoy";
 $route['login-history/(:num)'] = "user/loginHistoy/$1";
 $route['login-history/(:num)/(:num)'] = "user/loginHistoy/$1/$2";
-$route['referrals'] = 'referrals/referrals';
 
+/*********** REFERRALS ROUTES *******************/
+$route['referrals'] = 'referrals/referrals';
+$route['referrals/(:num)'] = 'referrals/adminreferrals/$1';
+$route['referrals/(:num)/(:num)'] = 'referrals/adminreferrals/$1/$2';
+$route['invite'] = 'referrals/invite';
 
 /*********** TEAM ROUTES *******************/
 $route['team'] = 'user/team';
@@ -172,6 +183,7 @@ $route['approveWithdrawal/(:num)'] = "transactions/approveWithdrawal/$1";
 $route['declineWithdrawal/(:num)'] = "transactions/declineWithdrawal/$1";
 $route['withdrawalInfo/(:any)/(:any)/(:any)'] = 'transactions/withdrawalInfo/$1/$2/$3';
 $route['user_payment_accounts/(:num)'] = "user/user_payment_accounts/$1";
+$route['transfee/(:any)/(:any)/(:any)'] = "transactions/transactionfee/$1/$2/$3";
 
 /*********** PAYMENTS ROUTES *******************/
 $route['earnings'] = 'transactions/earnings';
@@ -234,15 +246,6 @@ $route['previous_messages/(:num)'] = "Tickets/viewPreviousMessages/$1";
 $route['ticket/closed/(:num)'] = "Tickets/resolve/$1";
 $route['ticket/opened/(:num)'] = "Tickets/reopen/$1";
 
-/********** VERIFICATION ROUTES *********************/
-$route['verification'] = "verification/verify";
-$route['verification/(:any)'] = 'verification/verify/$1';
-$route['verificationupload'] = 'verification/submit';
-$route['verification/approval/(:any)'] = 'verification/approve/$1';
-$route['ver_reject/(:any)'] = 'verification/reject_approval/$1';
-$route['ver_approve/(:any)'] = 'verification/accept_approval/$1';
-
-
 /*********** WEB CONTROL ROUTES *******************/
 $route['webcontrol/templates'] = "webcontrol/templates";
 $route['webcontrol/templates/(:num)'] = "webcontrol/templates/$1";
@@ -259,6 +262,29 @@ $route['webcontrol/footer'] = "webcontrol/footer";
 $route['edit_footer'] = "webcontrol/editFooter";
 $route['webcontrol/builder/(:num)'] = "webcontrol/templateBuilder/$1";
 $route['webcontrol/builder/save'] = "webcontrol/editBuilder";
+$route['webcontrol/change-default-template/(:num)'] = "webcontrol/defaultTemplate/$1";
+
+/*********** VERIFICATION ROUTES *******************/
+$route['kyc-portal'] = "kyc/index";
+$route['kyc-portal/(:any)'] = "kyc/index/$1";
+$route['kyc-filter'] = "kyc/filter";
+$route['kyc-all-applications'] = "kyc/all_applications";
+$route['kyc-verification-info/(:num)'] = "kyc/verification_info/$1";
+$route['kyc-verify/(:num)'] = "kyc/verify/$1";
+$route['verify'] = "kyc/apply_for_verification";
+$route['kyc-apply'] = "kyc/submitDetails";
+
+/*********** COINBASE ROUTES *******************/
+$route['coinbase'] = "Coinbase/charge";
+$route['coinbase/success'] = "Coinbase/success";
+$route['coinbase/cancelled'] = "Coinbase/fail";
+$route['coinbase/ipn'] = "Coinbase/IPN_response";
+$route['coinbase/test'] = "Coinbase/test";
+
+/*********** PERFECT MONEY ROUTES *******************/
+$route['pm/success'] = "Perfectmoney/success";
+$route['pm/cancelled'] = "Perfectmoney/canceled";
+$route['pm/ipn'] = "Perfectmoney/IPN_response";
 
 /********** CRON JOBS ROUTES *********************/
 $route['emailcronjob'] = 'home/earningsEmails';

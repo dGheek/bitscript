@@ -435,7 +435,7 @@ class Transactions_model extends CI_Model
      * This function is used to add new user to system
      * @return number $insert_id : This is last inserted id
      */
-    function addNewDeposit($userId, $depositInfo, $earningsAmount, $start, $end, $payoutsInterval, $maturity, $businessDays)
+    function addNewDeposit($userId, $depositInfo, $earningsAmount, $start, $end, $payoutsInterval, $maturity, $businessDays, $principal)
     {
         $this->db->trans_start();
         $this->db->insert('tbl_deposits', $depositInfo);
@@ -447,6 +447,8 @@ class Transactions_model extends CI_Model
             if($payoutsInterval != $maturity)
             {
                 $dates = $this->getDatesFromRange($start, $end, $payoutsInterval, $businessDays);
+                $array = array();
+
                 foreach($dates as $date) {
                     $array[] = array(
                         'type' => 'interest',
@@ -458,12 +460,25 @@ class Transactions_model extends CI_Model
                     );
                 };
 
+                if($principal == 1){
+                    $array[] = array(
+                        'type' => 'principal',
+                        'userId'=> $userId,
+                        'depositId' => $result,
+                        'txnCode' => 'PO'.random_string('alnum',8),
+                        'amount' => $depositInfo['amount'],
+                        'createdDtm'=>$date
+                    );
+                };
+
                 $this->db->insert_batch('tbl_earnings', $array);
                 
                 $insert_id = $this->db->insert_id();
                 $result1 = $insert_id;
             } else {
-                $array = array(
+                $array = array();
+                
+                $array[] = array(
                     'type' => 'interest',
                     'userId'=> $userId,
                     'depositId' => $result,
@@ -471,7 +486,19 @@ class Transactions_model extends CI_Model
                     'amount' => $earningsAmount,
                     'createdDtm'=>$end
                 );
-                $this->db->insert('tbl_earnings', $array);
+
+                if($principal == 1){
+                    $array[] = array(
+                        'type' => 'principal',
+                        'userId'=> $userId,
+                        'depositId' => $result,
+                        'txnCode' => 'PO'.random_string('alnum',8),
+                        'amount' => $depositInfo['amount'],
+                        'createdDtm'=>$end
+                    );
+                };
+
+                $this->db->insert_batch('tbl_earnings', $array);
 
                 $insert_id = $this->db->insert_id();
                 $result1 = $insert_id;
@@ -488,18 +515,15 @@ class Transactions_model extends CI_Model
         return $result;
     }
 
-    function updateDeposit($userId, $depositId, $depositInfo, $earningsAmount, $start, $end, $payoutsInterval, $maturity, $businessDays)
-    {
+    function updateDeposit($userId, $depositId, $depositInfo, $earningsAmount, $start, $end, $payoutsInterval, $maturity, $businessDays){
         $this->db->trans_start();
 
         $this->db->where('id', $depositId);
         $result = $this->db->update('tbl_deposits', $depositInfo);
         $this->db->delete('tbl_earnings', array('depositId'=>$depositId, 'type'=>'interest'));
 
-        if($result > 0)
-        {
-            if($payoutsInterval != $maturity)
-            {
+        if($result > 0){
+            if($payoutsInterval != $maturity){
                 $dates = $this->getDatesFromRange($start, $end, $payoutsInterval, $businessDays);
                 foreach($dates as $date) {
                     $array[] = array(
@@ -551,7 +575,7 @@ class Transactions_model extends CI_Model
     
         $startDate = new DateTime($start);
         $realEnd = new DateTime($end);
-        //$realEnd->add($interval);
+        $realEnd->add($interval);
     
         $periods = new DatePeriod($startDate, $interval, $realEnd);
 
@@ -693,6 +717,7 @@ class Transactions_model extends CI_Model
         $this->db->where('createdDtm >=', $startDate);
         $this->db->where('createdDtm <=', $endDate);
         $this->db->where('status', $status);
+        $this->db->where('withdrawal_method !=', 'Wallet');
         $result = $this->db->get('tbl_withdrawals')->row();  
         return $result->amount;     
     }
@@ -708,6 +733,7 @@ class Transactions_model extends CI_Model
         if($userId != null){
         $this->db->where('userId', $userId);
         }
+        $this->db->where('withdrawal_method !=', 'wallet');
         $this->db->where('status', 0);
         $result = $this->db->get('tbl_withdrawals')->row();  
         return $result->amount;     
@@ -745,6 +771,7 @@ class Transactions_model extends CI_Model
     {
         $this->db->select_sum('amount');
         $this->db->where('status', 1);
+        $this->db->where('withdrawal_method !=', 'wallet');
         $result = $this->db->get('tbl_withdrawals')->row();  
         return $result->amount;
     }

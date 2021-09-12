@@ -26,7 +26,7 @@ $('.confirmAction').click(function(e){
             {
                     var div = document.getElementById('paymentData');
 
-                    if(content.method == 'Bank Transfer'){
+                    if(content.data.withdrawal_account == null){
                         var div1 = '<tr><td>Bank Name: </td>'
                         var div2 = '<td>'+content.data.bank_name+'</td></tr>'
                         var div3 = '<tr><td>Account Name: </td>'

@@ -17,32 +17,7 @@ class Settings extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('settings_model');
-        $this->load->model('user_model');
-        $this->load->model('login_model');
-        $this->load->model('email_model');
-        $this->load->model('payments_model');
-        $this->load->model('addons_model');
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
         $this->isLoggedIn(); 
-        
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('plugins',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
     }
 
     function settings()
@@ -60,6 +35,8 @@ class Settings extends BaseController
         $this->global['breadcrumbs'] = lang('settings').' <span class="breadcrumb-arrow-right"></span> '.lang('general');
         $data["companyInfo"] = $this->settings_model->getSettingsInfo();
         $data['periods'] = $this->payments_model->getAllPeriods();
+        $data['all_timezones'] = $this->_get_timezones();
+        $data['languages'] = $this->languages_model->all_Languages(NULL);
         $this->loadViews("settings/settings", $this->global, $data, NULL);
         }
     }
@@ -146,29 +123,40 @@ class Settings extends BaseController
                     'modifiedDtm'=>date('Y-m-d H:i:s')
                 );
 
-                $result = $this->email_model->updateEmailSettings($emailInfo, $emailId);
+                if($this->isDemo() == false){
+                    $result = $this->email_model->updateEmailSettings($emailInfo, $emailId);
 
-                if($result == true)
-                {
-                    $array = array(
-                        'success' => true,
-                        'msg' => html_escape(lang('successfully_edited_email_template')),
+                    if($result == true)
+                    {
+                        $array = array(
+                            'success' => true,
+                            'msg' => html_escape(lang('successfully_edited_email_template')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                    else
+                    {
+                        $array = array(
+                            'success' => false,
+                            'msg' => html_escape(lang('failed_to_edited_email_template')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                } else {
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
                         "csrfTokenName" => $csrfTokenName,
                         "csrfHash" => $csrfHash
                     );
 
-                    echo json_encode($array);
-                }
-                else
-                {
-                    $array = array(
-                        'success' => false,
-                        'msg' => html_escape(lang('failed_to_edited_email_template')),
-                        "csrfTokenName" => $csrfTokenName,
-                        "csrfHash" => $csrfHash
-                    );
-
-                    echo json_encode($array);
+                    echo json_encode($res);
                 }
             }
         }
@@ -245,6 +233,7 @@ class Settings extends BaseController
             $password = $this->input->post('password', TRUE);
             $useremail = $this->user_model->getUserInfoById($this->vendorId)->email;
             $minwithdrawal = $this->input->post('minwithdrawal', TRUE);
+            $defaultlang = $this->input->post('defaultlang', TRUE);
 
             $result1 = $this->login_model->loginMe($useremail, $password);
             if(!empty($result1))
@@ -269,7 +258,7 @@ class Settings extends BaseController
                 } 
 
                 if(isset($_FILES["dark-logo"]["name"])){
-                    if ($this->security->xss_clean($this->input->post('white-logo'), TRUE) === TRUE)
+                    if ($this->security->xss_clean($this->input->post('dark-logo'), TRUE) === TRUE)
                     {
                         $config["upload_path"] = './uploads';
                         $config['allowed_types'] = 'jpg|png';
@@ -356,22 +345,37 @@ class Settings extends BaseController
                     array(
                         'type' => 'min_withdrawal',
                         'value' => $minwithdrawal
+                    ),
+                    array(
+                        'type' => 'default_language',
+                        'value' => $defaultlang
                     )
                 );
-                
-               $this->db->update_batch('tbl_settings', $companyInfo, 'type');
 
-                 $array = array(
-                    'success' => true,
-                    'msg' => html_escape(lang('successfully_updated_your_info')),
-                    'whiteLogo' => $white_logourl,
-                    'darkLogo' => $dark_logourl,
-                    'favicon' => $favicon_url,
-                    "csrfTokenName" => $csrfTokenName,
-                    "csrfHash" => $csrfHash
-                );
+                if($this->isDemo() == false){
+                    $this->db->update_batch('tbl_settings', $companyInfo, 'type');
 
-                echo json_encode($array);
+                    $array = array(
+                       'success' => true,
+                       'msg' => html_escape(lang('successfully_updated_your_info')),
+                       'whiteLogo' => $white_logourl,
+                       'darkLogo' => $dark_logourl,
+                       'favicon' => $favicon_url,
+                       "csrfTokenName" => $csrfTokenName,
+                       "csrfHash" => $csrfHash
+                   );
+   
+                   echo json_encode($array);
+                } else {
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
+                        "csrfTokenName" => $csrfTokenName,
+                        "csrfHash" => $csrfHash
+                    );
+
+                    echo json_encode($res);
+                }
 
             } else {
                 $array = array(
@@ -432,6 +436,8 @@ class Settings extends BaseController
             $twfa_active = $this->input->post('acttfa', TRUE) == null ? 0 : 1;
             $chatplugin = $this->input->post('chatplugin', TRUE);
             $chat_active = $this->input->post('actchatplugin', TRUE) == null ? 0 : 1;
+            $timezone = $this->input->post('timezone', TRUE);
+            $disablefrontend = $this->input->post('disablefrontend', TRUE);
 
             $password = $this->input->post('password', TRUE);
             $useremail = $this->user_model->getUserInfoById($this->vendorId)->email;
@@ -471,34 +477,52 @@ class Settings extends BaseController
                     array(
                         'type' => 'google_recaptcha',
                         'value' => $recaptcha
+                    ),
+                    array(
+                        'type' => 'timezone',
+                        'value' => $timezone
+                    ),
+                    array(
+                        'type' => 'disable_frontend',
+                        'value' => $disablefrontend
                     )
                 );
-                
-                $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+                if($this->isDemo() == false){
+                    $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
             
-                if($result == true)
-                {
-                    $array = array(
-                        'success' => true,
-                        'msg' => html_escape(lang('successfully_updated_your_info')),
+                    if($result == true)
+                    {
+                        $array = array(
+                            'success' => true,
+                            'msg' => html_escape(lang('successfully_updated_your_info')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                    else
+                    {
+                        $array = array(
+                            'success' => false,
+                            'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                } else {
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
                         "csrfTokenName" => $csrfTokenName,
                         "csrfHash" => $csrfHash
                     );
 
-                    echo json_encode($array);
+                    echo json_encode($res);
                 }
-                else
-                {
-                    $array = array(
-                        'success' => false,
-                        'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
-                        "csrfTokenName" => $csrfTokenName,
-                        "csrfHash" => $csrfHash
-                    );
-
-                    echo json_encode($array);
-                }
-
+                
             } else {
                 $array = array(
                     'success' => false,
@@ -671,6 +695,14 @@ class Settings extends BaseController
                 $result = $this->payments_model->addPaymentMethod($array);
             } else if($ptype == 'auto')
             {
+                $this->load->helper('string');
+
+                $apiname = $this->payments_model->getAPI($api);
+
+                if($apiname != 'CoinPayments'){
+                    $code = random_string('alnum',3);
+                }
+
                 $array = array( 
                     'name'=>$methodname,
                     'logo'=>$nameLogo,
@@ -764,6 +796,10 @@ class Settings extends BaseController
                 'swcode' => $paymentMethod->swift_code,
                 'note' => $paymentMethod->note,
                 'status' => $paymentMethod->status,
+                'depVariable'=> $paymentMethod->depo_variable_comm,
+                'depConstant'=> $paymentMethod->depo_fixed_comm,
+                'witVariable'=> $paymentMethod->withdr_variable_comm,
+                'witConstant'=> $paymentMethod->withdr_fixed_comm,
                 'iswithdrawable'=>$paymentMethod->iswithdrawable,
                 "csrfTokenName" => $csrfTokenName,
                 "csrfHash" => $csrfHash
@@ -968,11 +1004,20 @@ class Settings extends BaseController
                     $bank_account = $this->input->post('acname', TRUE);
                     $ac_number = $this->input->post('acnumber', TRUE);
                     $swift = $this->input->post('swcode', TRUE);
+                    $dep_variable = $this->input->post('depvariable', TRUE);
+                    $dep_constant = $this->input->post('depconstant', TRUE);
+                    $wit_variable = $this->input->post('witvariable', TRUE);
+                    $wit_constant = $this->input->post('witconstant', TRUE);
+
                     $paymentInfo = array(
                         'status'=>$status,
                         'bank_name'=>$bank_name,
                         'account_name'=>$bank_account,
                         'account_number'=>$ac_number,
+                        'depo_variable_comm'=>$dep_variable,
+                        'depo_fixed_comm'=>$dep_constant,
+                        'withdr_variable_comm'=>$wit_variable,
+                        'withdr_fixed_comm'=>$wit_constant,
                         'iswithdrawable'=>$withdrawable,
                         'swift_code'=>$swift,
                         'logo'=>$nameLogo
@@ -1008,12 +1053,20 @@ class Settings extends BaseController
                 {
                     $methodname = $this->input->post('methodname', TRUE);
                     $note = $this->input->post('note', TRUE);
+                    $dep_variable = $this->input->post('depvariable', TRUE);
+                    $dep_constant = $this->input->post('depconstant', TRUE);
+                    $wit_variable = $this->input->post('witvariable', TRUE);
+                    $wit_constant = $this->input->post('witconstant', TRUE);
 
                     $paymentInfo = array(
                         'name' => $methodname,
                         'note' => $note,
                         'status'=>$status,
                         'iswithdrawable'=>$withdrawable,
+                        'depo_variable_comm'=>$dep_variable,
+                        'depo_fixed_comm'=>$dep_constant,
+                        'withdr_variable_comm'=>$wit_variable,
+                        'withdr_fixed_comm'=>$wit_constant,
                         'logo'=>$nameLogo
                     );
 
@@ -1060,6 +1113,10 @@ class Settings extends BaseController
                         $name = $this->input->post('methodname', TRUE);
                         $ref = $this->input->post('code', TRUE);
                         $API = $this->input->post('api', TRUE);
+                        $dep_variable = $this->input->post('depvariable', TRUE);
+                        $dep_constant = $this->input->post('depconstant', TRUE);
+                        $wit_variable = $this->input->post('witvariable', TRUE);
+                        $wit_constant = $this->input->post('witconstant', TRUE);
 
                         $paymentInfo = array(
                             'name' => $name,
@@ -1067,6 +1124,10 @@ class Settings extends BaseController
                             'API' => $API,
                             'status'=>$status,
                             'iswithdrawable'=>$withdrawable,
+                            'depo_variable_comm'=>$dep_variable,
+                            'depo_fixed_comm'=>$dep_constant,
+                            'withdr_variable_comm'=>$wit_variable,
+                            'withdr_fixed_comm'=>$wit_constant,
                             'logo'=>$nameLogo
                         );
 
@@ -1196,6 +1257,9 @@ class Settings extends BaseController
                 $this->form_validation->set_rules('payee_name','Payee Name','required', array(
                     'required' => lang('this_field_is_required')
                 ));
+                $this->form_validation->set_rules('passphrase','Passphrase','required', array(
+                    'required' => lang('this_field_is_required')
+                ));
             } else if($method == 'Google Recaptcha'){
                 $this->form_validation->set_rules('pKey','Site Key','required', array(
                     'required' => lang('this_field_is_required')
@@ -1306,6 +1370,7 @@ class Settings extends BaseController
                 $version = $this->input->post('version', TRUE);
                 $payee_account = $this->input->post('payee_account', TRUE);
                 $payee_name = $this->input->post('payee_name', TRUE);
+                $passphrase = $this->input->post('passphrase', TRUE);
                 $url = $this->input->post('btcpayurl', TRUE);
                 $merchantname = $this->input->post('merchantName', TRUE);
 
@@ -1360,6 +1425,7 @@ class Settings extends BaseController
                     $paymentInfo = array(
                         'merchantID'=>$payee_account,
                         'secret_key'=>$payee_name, 
+                        'public_key' => $passphrase,
                         'status'=>$status
                     );
                 }else if($method == 'Tawk.To') {
@@ -1382,7 +1448,10 @@ class Settings extends BaseController
                         )
                     );
 
-                    $settings_change = $this->db->update_batch('tbl_settings', $versionInfo, 'type');
+                    if($this->isDemo() == false){
+                        $settings_change = $this->db->update_batch('tbl_settings', $versionInfo, 'type');
+                    }
+                    
                 }else if($method == 'Google Authenticator') {
                     $paymentInfo = array(
                         'status'=>$status
@@ -1413,32 +1482,50 @@ class Settings extends BaseController
                         'secret_key'=>$sKey,
                         'status'=>$status
                     );
+                } else if($method == 'Coinbase Commerce'){
+                    $paymentInfo = array(
+                        'public_key'=>$pKey, 
+                        'secret_key'=>$sKey,
+                        'status'=>$status
+                    );
                 }
                 
-                $result = $this->payments_model->editInfo('tbl_addons_api', $paymentInfo, $id);
+                if($this->isDemo() == false){
+                    $result = $this->payments_model->editInfo('tbl_addons_api', $paymentInfo, $id);
 
-                if($result == true)
-                {
-                    $array = array(
-                        'success' => true,
-                        'msg' => html_escape($method.' '.lang('method_has_been_updated')),
+                    if($result == true)
+                    {
+                        $array = array(
+                            'success' => true,
+                            'msg' => html_escape($method.' '.lang('method_has_been_updated')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                    else
+                    {
+                        $array = array(
+                            'success' => false,
+                            'msg' => html_escape(lang('there_is_a_problem_in_updating_your_information')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+    
+                        echo json_encode($array);
+                    }
+                } else {
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
                         "csrfTokenName" => $csrfTokenName,
                         "csrfHash" => $csrfHash
                     );
 
-                    echo json_encode($array);
+                    echo json_encode($res);
                 }
-                else
-                {
-                    $array = array(
-                        'success' => false,
-                        'msg' => html_escape(lang('there_is_a_problem_in_updating_your_information')),
-                        "csrfTokenName" => $csrfTokenName,
-                        "csrfHash" => $csrfHash
-                    );
-
-                    echo json_encode($array);
-                }
+                
             }
         }
     }
@@ -1643,30 +1730,41 @@ class Settings extends BaseController
                                 'value' => $SMSPhone
                             )
                         );
-                        
-                        $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+                        if($this->isDemo() == false){
+                            $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
                     
-                        if($result == true)
-                        {
-                            $array = array(
-                                'success' => true,
-                                'msg' => html_escape(lang('updated_successfully')),
+                            if($result == true)
+                            {
+                                $array = array(
+                                    'success' => true,
+                                    'msg' => html_escape(lang('updated_successfully')),
+                                    "csrfTokenName" => $csrfTokenName,
+                                    "csrfHash" => $csrfHash
+                                );
+    
+                                echo json_encode($array);
+                            }
+                            else
+                            {
+                                $array = array(
+                                    'success' => false,
+                                    'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
+                                    "csrfTokenName" => $csrfTokenName,
+                                    "csrfHash" => $csrfHash
+                                );
+    
+                                echo json_encode($array);
+                            }
+                        } else {
+                            $res = array(
+                                'success'=>false,
+                                'msg'=>'This feature is not allowed in demo',
                                 "csrfTokenName" => $csrfTokenName,
                                 "csrfHash" => $csrfHash
                             );
-
-                            echo json_encode($array);
-                        }
-                        else
-                        {
-                            $array = array(
-                                'success' => false,
-                                'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
-                                "csrfTokenName" => $csrfTokenName,
-                                "csrfHash" => $csrfHash
-                            );
-
-                            echo json_encode($array);
+        
+                            echo json_encode($res);
                         }
 
                     } else {
@@ -1689,6 +1787,166 @@ class Settings extends BaseController
 
                     echo json_encode($array);
                 }
+            }
+        }
+    }
+
+    function purchasecode()
+    {
+        $module_id = 'settings';
+        $module_action = 'email_templates';
+        if($this->isAdmin($module_id, $module_action) == FALSE)
+        {
+            $this->loadThis();
+        } 
+        else
+        {
+            $csrfTokenName = $this->security->get_csrf_token_name();
+            $csrfHash = $this->security->get_csrf_hash();
+            $this->global['pageTitle'] = 'Settings';
+
+            $this->load->library('form_validation');
+            $this->form_validation->set_rules('purchasecode','Envato Purchase Code','required|callback_purchase_code', array(
+                'required' => lang('this_field_is_required')
+            ));
+
+            if($this->form_validation->run() == FALSE)
+            {
+                $this->session->set_flashdata('errors', validation_errors());
+                $errors = array();
+                // Loop through $_POST and get the keys
+                foreach ($this->input->post() as $key => $value)
+                {
+                    // Add the error message for this field
+                    $errors[$key] = form_error($key);
+                }
+                $response['errors'] = array_filter($errors); // Some might be empty
+                $response['success'] = false;
+                $response["csrfTokenName"] = $csrfTokenName;
+                $response["csrfHash"] = $csrfHash;
+                $response['msg'] = html_escape(lang('please_correct_errors_and_try_again'));
+
+                echo json_encode($response); 
+            }
+            else
+            {
+                $code = $this->input->post('purchasecode', TRUE);
+                $password = $this->input->post('password', TRUE);
+
+                $useremail = $this->user_model->getUserInfoById($this->vendorId)->email;
+
+                $result1 = $this->login_model->loginMe($useremail, $password);
+                if(!empty($result1))
+                {
+                    $companyInfo = array(
+                        array(
+                            'type' => 'envato_purchase_code',
+                            'value' => $code
+                        )
+                    );
+
+                    $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+                    if($result == true)
+                    {
+                        $array = array(
+                            'success' => true,
+                            'msg' => html_escape(lang('updated_successfully')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+
+                        echo json_encode($array);
+                    }
+                    else
+                    {
+                        $array = array(
+                            'success' => false,
+                            'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+
+                        echo json_encode($array);
+                    }
+                }
+            }
+        }
+    }
+
+    function envatopurchasecode()
+    {
+        $module_id = 'settings';
+        $module_action = 'email_templates';
+        if($this->isAdmin($module_id, $module_action) == FALSE)
+        {
+            $this->loadThis();
+        } 
+        else
+        {
+            $csrfTokenName = $this->security->get_csrf_token_name();
+            $csrfHash = $this->security->get_csrf_hash();
+            $this->global['pageTitle'] = 'Settings';
+
+            $this->load->library('form_validation');
+            $this->form_validation->set_rules('purchasecode','Envato Purchase Code','required|callback_purchase_code', array(
+                'required' => lang('this_field_is_required')
+            ));
+
+            if($this->form_validation->run() == FALSE)
+            {
+                $this->session->set_flashdata('errors', validation_errors());
+                $errors = array();
+                // Loop through $_POST and get the keys
+                foreach ($this->input->post() as $key => $value)
+                {
+                    // Add the error message for this field
+                    $errors[$key] = form_error($key);
+                }
+                $response['errors'] = array_filter($errors); // Some might be empty
+                $response['success'] = false;
+                $response["csrfTokenName"] = $csrfTokenName;
+                $response["csrfHash"] = $csrfHash;
+                $response['msg'] = html_escape(lang('please_correct_errors_and_try_again'));
+
+                echo json_encode($response); 
+            }
+            else
+            {
+                $code = $this->input->post('purchasecode', TRUE);
+
+                $companyInfo = array(
+                    array(
+                        'type' => 'envato_purchase_code',
+                        'value' => $code
+                    )
+                );
+
+                $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+                if($result == true)
+                {
+                    $array = array(
+                        'success' => true,
+                        'msg' => html_escape(lang('updated_successfully')),
+                        "csrfTokenName" => $csrfTokenName,
+                        "csrfHash" => $csrfHash
+                    );
+
+                    echo json_encode($array);
+                }
+                else
+                {
+                    $array = array(
+                        'success' => false,
+                        'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
+                        "csrfTokenName" => $csrfTokenName,
+                        "csrfHash" => $csrfHash
+                    );
+
+                    echo json_encode($array);
+                }
+                
             }
         }
     }
@@ -1787,30 +2045,41 @@ class Settings extends BaseController
                             'value' => $emailActive
                         )
                     );
-                    
-                    $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+                    if($this->isDemo() == false){
+                        $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
                 
-                    if($result == true)
-                    {
-                        $array = array(
-                            'success' => true,
-                            'msg' => html_escape(lang('updated_successfully')),
+                        if($result == true)
+                        {
+                            $array = array(
+                                'success' => true,
+                                'msg' => html_escape(lang('updated_successfully')),
+                                "csrfTokenName" => $csrfTokenName,
+                                "csrfHash" => $csrfHash
+                            );
+    
+                            echo json_encode($array);
+                        }
+                        else
+                        {
+                            $array = array(
+                                'success' => false,
+                                'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
+                                "csrfTokenName" => $csrfTokenName,
+                                "csrfHash" => $csrfHash
+                            );
+    
+                            echo json_encode($array);
+                        }
+                    } else {
+                        $res = array(
+                            'success'=>false,
+                            'msg'=>'This feature is not allowed in demo',
                             "csrfTokenName" => $csrfTokenName,
                             "csrfHash" => $csrfHash
                         );
-
-                        echo json_encode($array);
-                    }
-                    else
-                    {
-                        $array = array(
-                            'success' => false,
-                            'msg' => html_escape(lang('there_is_nothing_to_update_please_check_and_try_again')),
-                            "csrfTokenName" => $csrfTokenName,
-                            "csrfHash" => $csrfHash
-                        );
-
-                        echo json_encode($array);
+    
+                        echo json_encode($res);
                     }
 
                 } else {
@@ -1824,6 +2093,17 @@ class Settings extends BaseController
                     echo json_encode($array);
                 }      
             }
+        }
+    }
+
+    function purchase_code($str){
+        $this->load->library('Installer');
+        $installer = new Installer();
+        if($installer->cd_check($_POST)->success != true){
+            $this->form_validation->set_message('purchase_code', $installer->cd_check($_POST)->msg);
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -1876,6 +2156,9 @@ class Settings extends BaseController
             $csrfTokenName = $this->security->get_csrf_token_name();
             $csrfHash = $this->security->get_csrf_hash();
 
+            $refactive = $this->input->post('refearningsactive', TRUE);
+            $reffrequency = $this->input->post('reffrequency', TRUE);
+
             if($this->input->post('refType', TRUE) == 'simple')
             {
                 $refType = 'simple';
@@ -1900,6 +2183,14 @@ class Settings extends BaseController
                         array(
                             'type' => 'disableRefPayouts',
                             'value' => $refpayouts
+                        ),
+                        array(
+                            'type' => 'refactive',
+                            'value' => $refactive
+                        ),
+                        array(
+                            'type' => 'reffrequency',
+                            'value' => $reffrequency
                         )
                     );
                     
@@ -1981,6 +2272,14 @@ class Settings extends BaseController
                             array(
                                 'type' => 'disableRefPayouts',
                                 'value' => $refpayouts
+                            ),
+                            array(
+                                'type' => 'refactive',
+                                'value' => $refactive
+                            ),
+                            array(
+                                'type' => 'reffrequency',
+                                'value' => $reffrequency
                             )
                         );
                         
@@ -2021,6 +2320,66 @@ class Settings extends BaseController
                         echo json_encode($array);
                     }
                 }
+            }
+        }
+    }
+
+    function kycEdit()
+    {
+        $module_id = 'settings';
+        $module_action = 'general_settings';
+        if($this->isAdmin($module_id, $module_action) == FALSE)
+        {
+            $this->loadThis();
+        } 
+        else
+        {
+            $csrfTokenName = $this->security->get_csrf_token_name();
+            $csrfHash = $this->security->get_csrf_hash();
+
+            $kycstatus = $this->input->post('kycstatus', TRUE);
+            $kycallowdeposits = $this->input->post('allowkycdeposits', TRUE);
+            $kycallowwithdrawals = $this->input->post('allowkycwithdrawals', TRUE);
+
+
+            $companyInfo = array(
+                array(
+                    'type' => 'kyc_allow_deposits',
+                    'value' => $kycallowdeposits
+                ),
+                array(
+                    'type' => 'kyc_allow_withdrawals',
+                    'value' => $kycallowwithdrawals
+                ),
+                array(
+                    'type' => 'kyc_status',
+                    'value' => $kycstatus
+                ),
+            );
+
+            $result = $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+            if($result == true)
+            {
+                $array = array(
+                    'success' => true,
+                    'msg' => html_escape(lang('successfully_changed_settings')),
+                    "csrfTokenName" => $csrfTokenName,
+                    "csrfHash" => $csrfHash
+                );
+
+                echo json_encode($array);
+            }
+            else
+            {
+                $array = array(
+                    'success' => false,
+                    'msg' => html_escape(lang('failed_to_change_settings')),
+                    "csrfTokenName" => $csrfTokenName,
+                    "csrfHash" => $csrfHash
+                );
+
+                echo json_encode($array);
             }
         }
     }

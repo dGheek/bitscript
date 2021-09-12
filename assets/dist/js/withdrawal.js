@@ -1,3 +1,32 @@
+var baseurl = $('head base').attr('href');
+
+function transfee(sel)
+{
+    var amount = $('#amount').val();
+    var method = $("input[name=withdrawalMethod]:checked").val();
+
+    if(amount > 0 && method != undefined)
+
+    $.ajax({
+        url: baseurl + 'transfee/' + 'withdrawal/' + method + '/' + amount,
+        method:"GET",
+        success:function(data)
+        {
+            var content = JSON.parse(data);
+            if(content.success){
+                $('#transactionfeewrapper').show();
+                $('#finalamountwrapper').show();
+                $('#transactionfee').html(content.fee);
+                $('#finalamount').html(content.amount_less_commission);
+            } else {
+                $('#transactionfeewrapper').hide();
+                $('#finalamountwrapper').hide();
+            }
+        },
+        error: function(data){}
+    });
+}
+
 $("#submitButtonForm").click(function(e) {
     e.preventDefault();
     var wval = $("input[name=amount]").val();
@@ -6,7 +35,7 @@ $("#submitButtonForm").click(function(e) {
     var wref = $("input[name=withdrawalMethod]:checked").attr('data-value');
     var account = $('input[name=withdrawalMethod]:checked').attr('data-name');
     var id = $('input[name=withdrawalMethod]:checked').attr('data-id');
-    var actionurl = '../withdrawalInfo/' + id + '/' + wref + '/' + wval;
+    var actionurl = baseurl + 'withdrawalInfo/' + id + '/' + wref + '/' + wval;
 
     if(wval == '' || typeof wmeth === 'undefined')
     {
@@ -80,7 +109,7 @@ $("#addWithdrawal").on('submit', function(e) {
     var wmeth = $('input[name=withdrawalMethod]:checked').attr('data-name');
     var api = $('input[name=withdrawalMethod]:checked').attr('data-api');
     var wacc = $("#account-wda").val();
-    var actionurl = '../withdraw';
+    var actionurl = baseurl + 'withdraw';
     var crd = $("input[name=cardNumber]").val();
 
     //Do a check to see if all variables needed have been entered
@@ -114,7 +143,7 @@ $("#addWithdrawal").on('submit', function(e) {
                             $('input[name="' + key + '"], select[name="' + key + '"]').addClass('inputTxtError').after(msg);
                         });
                     } else {
-                        window.location.replace("../withdrawals");
+                        window.location.replace(baseurl + "withdrawals");
                     }
                     $('#withdrawSubmitButton').prop('disabled', false);
                     $('#withdrawSubmitButton').html('Process Withdrawal');
@@ -135,7 +164,7 @@ $("#addWithdrawal").on('submit', function(e) {
 $("#activate-select").click(function(e) {
     e.preventDefault();
     var twfa = $("input[name=twfa]:checked").val();
-    var actionurl = '../emailwithdrawal2FA';
+    var actionurl = baseurl + 'emailwithdrawal2FA';
     $("#activate-select").prop('disabled', true);
     $("#activate-select").html('Processing …');
 
@@ -189,7 +218,7 @@ $("#google2FAForm").submit(function(e) {
                     'success'
                 );
                 $('#authenticate-modal').modal('toggle');
-                window.location.replace('../withdrawals');
+                window.location.replace(baseurl + 'withdrawals');
 
             } else if(content.success == false)
             {
@@ -235,7 +264,7 @@ $('.myElements').each(function() {
             var wmeth = $("input[name=withdrawalMethod]:checked").val();
             var account = $('input[name=withdrawalMethod]:checked').attr('data-name');
             var id = $('input[name=withdrawalMethod]:checked').attr('data-id');
-            var actionurl = '../withdrawalInfo/' + id + '/' + wmeth + '/' + wval;
+            var actionurl = baseurl + 'withdrawalInfo/' + id + '/' + wmeth + '/' + wval;
             if(typeof wmeth !== 'undefined')
             {
                 // Do action

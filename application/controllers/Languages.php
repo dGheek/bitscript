@@ -17,31 +17,7 @@ class Languages extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('settings_model');
-        $this->load->model('user_model');
-        $this->load->model('login_model');
-        $this->load->model('email_model');
-        $this->load->model('payments_model');
-        $this->load->model('addons_model');
-        $this->load->model('twilio_model');
-        $this->load->model('languages_model');
         $this->isLoggedIn(); 
-
-        $userLang = $this->session->userdata('site_lang') == '' ?  "english" : $this->session->userdata('site_lang');
-
-        $this->load->helper('language');
-        $this->lang->load('common',$userLang);
-        $this->lang->load('dashboard',$userLang);
-        $this->lang->load('transactions',$userLang);
-        $this->lang->load('users',$userLang);
-        $this->lang->load('login',$userLang);
-        $this->lang->load('plans',$userLang);
-        $this->lang->load('email_templates',$userLang);
-        $this->lang->load('settings',$userLang);
-        $this->lang->load('payment_methods',$userLang);
-        $this->lang->load('languages',$userLang);
-        $this->lang->load('validation',$userLang);
-        $this->lang->load('tickets',$userLang);
     }
 
     function addLanguage(){
@@ -116,8 +92,9 @@ class Languages extends BaseController
                     'code'=>$code, 
                     'logo'=>$logo
                 );
-
-                $result = $this->languages_model->addLanguage($array);
+                $defaultLang = $this->settings_model->getSettingsInfo()['default_language'];
+                $langid = $this->languages_model->getLangByName($defaultLang)->id;
+                $result = $this->languages_model->addLanguage($array, $langid);
 
                 if($result == true)
                 {
@@ -191,71 +168,220 @@ class Languages extends BaseController
             }
             else
             {
-                $id   = $this->input->post('lid', TRUE);
-                $name = $this->input->post('lname', TRUE);
-                $code = $this->input->post('lcode', TRUE);
-
-                //Upload the logos First
-                if(isset($_FILES["logo"]["name"])){
-                    if ($this->security->xss_clean($this->input->post('logo'), TRUE) === TRUE)
-                    {
-                        $config["upload_path"] = './uploads';
-                        $config['allowed_types'] = 'jpg|png';
-                        $this->upload->initialize($config);
-                        if ($this->upload->do_upload('logo')){
-                            $data = ($this->upload->data());
-                            $logo = $data["file_name"];
-                        }else{
-                            $errors = $this->upload->display_errors();
-                            $getLangLogo = $this->languages_model->getLang($id);
-                            $logo = $getLangLogo->logo;
-                        }; 
-                    }
-                } 
-
-                if (empty($_FILES['logo']['name']))
-                {
-                    $array = array(
-                        'name'=>$name, 
-                        'code'=>$code 
-                    );
-                } else
-                {
-                    $array = array(
-                        'name'=>$name, 
-                        'code'=>$code, 
-                        'logo'=>$logo
-                    );
-                }
-                
-                
-
-                $result = $this->languages_model->editLanguage($array, $id);
-
-                if($result == true)
-                {
-                    $array = array(
-                        'success' => true,
-                        'msg' => html_escape(lang('successfully_changed_language')),
-                        "csrfTokenName" => $csrfTokenName,
-                        "csrfHash" => $csrfHash,
-                        "logo"=>$logo,
-                        "name"=>$name,
-                        "code"=>$code
-                    );
-
-                    echo json_encode($array);
-                }
-                else
-                {
-                    $array = array(
-                        'success' => false,
-                        'msg' => html_escape(lang('failed_to_edit_language')),
+                if($this->isDemo()){
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
                         "csrfTokenName" => $csrfTokenName,
                         "csrfHash" => $csrfHash
                     );
 
-                    echo json_encode($array);
+                    echo json_encode($res);
+                } else {
+                    $id   = $this->input->post('lid', TRUE);
+                    $name = $this->input->post('lname', TRUE);
+                    $code = $this->input->post('lcode', TRUE);
+
+                    //Upload the logos
+                    if(isset($_FILES["logo"]["name"])){
+                        if ($this->security->xss_clean($this->input->post('logo'), TRUE) === TRUE)
+                        {
+                            $config["upload_path"] = './uploads';
+                            $config['allowed_types'] = 'jpg|png';
+                            $this->upload->initialize($config);
+                            if ($this->upload->do_upload('logo')){
+                                $data = ($this->upload->data());
+                                $logo = $data["file_name"];
+                            }else{
+                                $errors = $this->upload->display_errors();
+                                $getLangLogo = $this->languages_model->getLang($id);
+                                $logo = $getLangLogo->logo;
+                            }; 
+                        }
+                    } 
+
+                    if (empty($_FILES['logo']['name']))
+                    {
+                        $array = array(
+                            'name'=>$name, 
+                            'code'=>$code 
+                        );
+                    } else
+                    {
+                        $array = array(
+                            'name'=>$name, 
+                            'code'=>$code, 
+                            'logo'=>$logo
+                        );
+                    } 
+                    
+                    //First check if this is the default lang
+                    $defaultLang = $this->settings_model->getSettingsInfo()['default_language'];
+                    $thisLang = $this->languages_model->getLang($id)->name;
+
+                    if($defaultLang == $thisLang){
+                        //We need to change the default lang as well
+                        $companyInfo = array(
+                            array(
+                                'type' => 'default_language',
+                                'value' => $name
+                            ),
+                        );
+
+                        $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+
+                        $result = $this->languages_model->editLanguage($array, $id);
+                        
+                    } else {
+                        //Proceed to edit
+                        $result = $this->languages_model->editLanguage($array, $id);
+                    }
+
+                    if($result == true)
+                    {
+                        $array = array(
+                            'success' => true,
+                            'msg' => html_escape(lang('successfully_changed_language')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash,
+                            "logo"=>$logo,
+                            "name"=>$name,
+                            "code"=>$code
+                        );
+
+                        echo json_encode($array);
+                    }
+                    else
+                    {
+                        $array = array(
+                            'success' => false,
+                            'msg' => html_escape(lang('failed_to_edit_language')),
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+
+                        echo json_encode($array);
+                    }
+                }
+            }
+        }
+    }
+
+    function deleteLanguage(){
+        $module_id = 'languages';
+        $module_action = 'languages';
+        if($this->isAdmin($module_id, $module_action) == FALSE)
+        {
+            $this->loadThis();
+        } 
+        else
+        {
+            $csrfTokenName = $this->security->get_csrf_token_name();
+            $csrfHash = $this->security->get_csrf_hash();
+            
+            $this->load->library('form_validation');
+            $this->form_validation->set_rules('lid','ID','required', array(
+                'required' => lang('this_field_is_required')
+            ));
+
+            if($this->form_validation->run() == FALSE)
+            {
+                $this->session->set_flashdata('errors', validation_errors());
+                $errors = array();
+                // Loop through $_POST and get the keys
+                foreach ($this->input->post() as $key => $value)
+                {
+                    // Add the error message for this field
+                    $errors[$key] = form_error($key);
+                }
+                $response['errors'] = array_filter($errors); // Some might be empty
+                $response['success'] = false;
+                $response["csrfTokenName"] = $csrfTokenName;
+                $response["csrfHash"] = $csrfHash;
+                $response['msg'] = html_escape(lang('please_correct_errors_and_try_again'));
+
+                echo json_encode($response); 
+            }
+            else
+            {
+                if($this->isDemo()){
+                    $res = array(
+                        'success'=>false,
+                        'msg'=>'This feature is not allowed in demo',
+                        "csrfTokenName" => $csrfTokenName,
+                        "csrfHash" => $csrfHash
+                    );
+
+                    echo json_encode($res);
+                } else {
+                    $id   = $this->input->post('lid', TRUE);
+
+                    //First check how many languages are currently available
+                    $numlang = $this->languages_model->getNumLanguages();
+
+                    if($numlang == 1){
+                        //Stop here, we can't delete this language as it is being used
+                        $array = array(
+                            'success' => false,
+                            'msg' => 'You can\'t delete this language as it is being used.',
+                            "csrfTokenName" => $csrfTokenName,
+                            "csrfHash" => $csrfHash
+                        );
+
+                        echo json_encode($array);
+                    } else if($numlang > 1){
+                        //We can delete an extra language as long as it is not the only language in the system
+                        //Check if the language being deleted is the same as the currentLang
+                        $defaultLang = $this->settings_model->getSettingsInfo()['default_language'];
+                        $thisLang = $this->languages_model->getLang($id)->name;
+
+                        if($defaultLang == $thisLang){
+                            //Go to language db and get another language replacement for default language
+                            $res = $this->languages_model->deleteLang($id);
+
+                            if($res){
+                                $newLang = $this->languages_model->firstLangRow()->name;
+                                $companyInfo = array(
+                                    array(
+                                        'type' => 'default_language',
+                                        'value' => $newLang
+                                    ),
+                                );
+                                $this->db->update_batch('tbl_settings', $companyInfo, 'type');
+                                
+    
+                                $array = array(
+                                    'success' => true,
+                                    'msg' => 'Language deleted succesfully!',
+                                    "csrfTokenName" => $csrfTokenName,
+                                    "csrfHash" => $csrfHash
+                                );
+        
+                                echo json_encode($array);
+                            } else {
+                                $array = array(
+                                    'success' => false,
+                                    'msg' => 'Something happened! Please reload and try again.',
+                                    "csrfTokenName" => $csrfTokenName,
+                                    "csrfHash" => $csrfHash
+                                );
+        
+                                echo json_encode($array);
+                            }
+                        } else {
+                            //Just proceed and delete the language
+                            $this->languages_model->deleteLang($id);
+
+                            $array = array(
+                                'success' => true,
+                                'msg' => 'Language deleted succesfully!',
+                                "csrfTokenName" => $csrfTokenName,
+                                "csrfHash" => $csrfHash
+                            );
+    
+                            echo json_encode($array);
+                        }
+                    }
                 }
             }
         }

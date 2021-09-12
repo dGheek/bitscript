@@ -35,12 +35,12 @@
 */
 
 // The following values will probably need to be changed.
-$db['default']['username'] = "proinvest";
+$db['default']['username'] = "";
 $db['default']['password'] = "";
-$db['default']['database'] = "proinvest";
+$db['default']['database'] = "";
 
 // The following values can probably stay the same.
-$db['default']['hostname'] = "localhost";
+$db['default']['hostname'] = "127.0.0.1";
 $db['default']['dbdriver'] = "mysqli"; //Updated to latest driver.
 $db['default']['dbprefix'] = "";
 $db['default']['pconnect'] = FALSE;
@@ -67,9 +67,6 @@ if ($mysqli_connection->connect_error) {
    //echo "Not connected, error: " . $mysqli_connection->connect_error;
    redirect(base_url().'install');
 }
-else {
-   echo "Connected.";
-}
-die( 'file: ' .__FILE__ . ' Line: ' .__LINE__);
+
 
 

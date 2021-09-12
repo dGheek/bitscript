@@ -22,6 +22,15 @@ $("#contactForm").submit(function(e) {
                         $('textarea[name="' + key + '"], select[name="' + key + '"]').addClass('inputTxtError').after(msg);
                     });
                 }
+
+                if(content.v == 'v2'){
+                    grecaptcha.reset();
+                } else if(content.v == 'v3'){
+                    grecaptcha.execute(content.key).then(function (token) {
+                        var recaptchaResponse = document.getElementById('recaptchaResponse');
+                        recaptchaResponse.value = token;
+                    });
+                }
             },
             error: function(data) {
 

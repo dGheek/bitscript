@@ -196,6 +196,19 @@ class Ticket_model extends CI_Model
          $query = $this->db->get();
 
          return $query->result();
-     }
+    }
+
+    function pendingtickets(){
+        $this->db->select('*');
+        $this->db->from('tbl_tickets as BaseTbl');
+        $this->db->where('BaseTbl.resolved', 0);
+        $query = $this->db->get();
+
+        if($query->num_rows() > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }

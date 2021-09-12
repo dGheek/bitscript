@@ -1,3 +1,5 @@
+var baseurl = $('head base').attr('href');
+
 $(".lang").submit(function(e) {
     e.preventDefault();
     var actionurl = e.currentTarget.action;
@@ -42,6 +44,9 @@ $(".lang").submit(function(e) {
                     $('.settingsLang').attr('data-id' , content.id);
                     $(".dt-contact-active").removeClass("dt-contact-active");
                     $(".contacts-list").append('<button type="submit" class="langSelect dt-contact bg-white w-100 text-left border-n dt-contact-active" id="template'+ content.id +'" data-id="'+ content.id +'"><div class="dt-contact__info"><h4 class="dt-module-side-nav__text mt-1m text-capitalize">'+ content.name +'</h4></div></button>');
+                } else if(formid === 'deleteLang')
+                {
+                    location.reload();
                 }
             }
             if(content.success == false)
@@ -77,7 +82,7 @@ $(".langSelect").click(function(e){
     
     $.ajax({
         type: "GET",
-        url: './getLang/' + value,
+        url: baseurl + 'settings/getLang/' + value,
         data: $(this).serialize(),
         success: function(data) {
             var content = JSON.parse(data);
@@ -85,10 +90,11 @@ $(".langSelect").click(function(e){
             $('#langCode').html(content.code);
             $('#transLangId').val(value);
             $('#lid').val(value);
+            $('#llid').val(value);
             $('#lname').val(content.name);
             $('#lcode').val(content.code);
             $('.dt-drawer').removeClass('open');
-            $('#langLogo').attr('src', '../uploads/' + content.logo);
+            $('#langLogo').attr('src', baseurl + 'uploads/' + content.logo);
             setTimeout(function () {
                 $('#LangModulesLoader').hide();
                 $('#AllLangModules').show();

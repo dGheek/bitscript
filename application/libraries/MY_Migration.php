@@ -30,6 +30,7 @@ class MY_Migration extends CI_Migration
 			
 		}
 	}
+	
 	public function get_migration_number($migration)
 	{
 		return $this->_get_migration_number($migration);
